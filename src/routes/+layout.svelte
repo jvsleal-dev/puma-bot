@@ -17,7 +17,8 @@
     { title: 'Clientes & Vendas', href: '/clientes', icon: 'point_of_sale' },
     { title: 'Remarketing', href: '/remarketing', icon: 'campaign' },
     { title: 'Gateways PIX', href: '/gateways', icon: 'account_balance_wallet' },
-    { title: 'Financeiro', href: '/financeiro', icon: 'payments' }
+    { title: 'Financeiro', href: '/financeiro', icon: 'payments' },
+    { title: 'Painel Admin', href: '/admin', icon: 'admin_panel_settings', badge: 'ROOT' }
   ];
 
   // Identifica se estamos em página pública (landing, login, cadastro)

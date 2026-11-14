@@ -48,6 +48,29 @@ try {
         const db = this.getDB();
         return db.users[0] || null;
       },
+      findMany: async ({ orderBy, include }: any = {}) => {
+        const db = this.getDB();
+        return db.users.map((u: any) => {
+          const userBots = db.bots.filter((b: any) => b.userId === u.id);
+          const botIds = userBots.map((b: any) => b.id);
+          const userSales = db.sales.filter((s: any) => botIds.includes(s.botId));
+          const paidSales = userSales.filter((s: any) => s.status === 'PAID');
+          const totalVol = paidSales.reduce((acc: number, curr: any) => acc + (Number(curr.amount) || 0), 0);
+          return {
+            ...u,
+            bots: include?.bots ? userBots : undefined,
+            _count: {
+              bots: userBots.length,
+              sales: userSales.length
+            },
+            totalRevenue: totalVol
+          };
+        });
+      },
+      count: async () => {
+        const db = this.getDB();
+        return db.users.length;
+      },
       findUnique: async ({ where }: any) => {
         const db = this.getDB();
         return db.users.find((u: any) => (where?.id && u.id === where.id) || (where?.email && u.email === where.email)) || null;
@@ -94,8 +117,10 @@ try {
           const botSales = db.sales.filter((s: any) => s.botId === b.id);
           const botSubs = db.vipSubscriptions.filter((v: any) => v.botId === b.id && v.active);
           const botFlow = db.flows.find((f: any) => f.botId === b.id);
+          const owner = db.users.find((u: any) => u.id === b.userId) || { name: 'Operador Admin', email: 'admin@pumabot.com' };
           return {
             ...b,
+            user: include?.user ? { name: owner.name, email: owner.email } : undefined,
             flow: botFlow || null,
             _count: {
               sales: botSales.length,
@@ -234,12 +259,17 @@ try {
         }
 
         return sales.map((s: any) => {
-          const bot = db.bots.find((b: any) => b.id === s.botId) || { name: 'Robô VIP', username: 'pumabot' };
+          const bot = db.bots.find((b: any) => b.id === s.botId) || { name: 'Robô VIP', username: 'pumabot', userId: '' };
+          const owner = db.users.find((u: any) => u.id === bot.userId) || { name: 'Admin', email: 'admin@pumabot.com' };
           return {
             ...s,
             telegramUserId: BigInt(s.telegramUserId || '0'),
             createdAt: new Date(s.createdAt || Date.now()),
-            bot: include?.bot ? { name: bot.name, username: bot.username } : undefined
+            bot: include?.bot ? {
+              name: bot.name,
+              username: bot.username,
+              user: { name: owner.name, email: owner.email }
+            } : undefined
           };
         });
       },
@@ -282,6 +312,16 @@ try {
           };
         }
         return { id: where?.id, ...data };
+      },
+      delete: async ({ where }: any) => {
+        const db = this.getDB();
+        const idx = db.sales.findIndex((s: any) => (where?.id && s.id === where.id) || (where?.pixTxid && s.pixTxid === where.pixTxid));
+        if (idx !== -1) {
+          const removed = db.sales.splice(idx, 1)[0];
+          this.saveDB(db);
+          return removed;
+        }
+        return null;
       }
     };
 
@@ -347,6 +387,11 @@ try {
         db.webhookLogs.push(newLog);
         this.saveDB(db);
         return newLog;
+      },
+      findMany: async ({ take }: any = {}) => {
+        const db = this.getDB();
+        const logs = [...db.webhookLogs];
+        return logs.slice(0, take || 50);
       }
     };
 
