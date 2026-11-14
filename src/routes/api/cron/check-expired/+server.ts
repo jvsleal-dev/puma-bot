@@ -65,7 +65,7 @@ export const GET: RequestHandler = async ({ request }) => {
 
  // Mensagem amigável de renovação no privado do usuário
  const renewalMessage =
- `️ <b>SEU ACESSO VIP EXPIROU!</b>\n\n` +
+ ` <b>SEU ACESSO VIP EXPIROU!</b>\n\n` +
  `Sua assinatura no grupo VIP chegou ao fim.\n` +
  `Para não perder as oportunidades e novos conteúdos, renove seu acesso agora com aprovação imediata via PIX:`;
 

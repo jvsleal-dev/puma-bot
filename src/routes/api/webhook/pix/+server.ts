@@ -110,8 +110,8 @@ export const POST: RequestHandler = async ({ request, platform }) => {
  ` <b>PAGAMENTO CONFIRMADO COM SUCESSO!</b>\n\n` +
  ` Seu acesso ao <b>Grupo VIP</b> foi liberado!\n\n` +
  ` <b>Duração:</b> ${sale.durationDays} dias\n` +
- `⏳ <b>Válido até:</b> ${expiresAt.toLocaleDateString('pt-BR')} às ${expiresAt.toLocaleTimeString('pt-BR')}\n\n` +
- `️ <b>ATENÇÃO:</b> <i>O link abaixo é de uso único e pessoal. Ele se autodestrói após o primeiro clique!</i>`;
+ ` <b>Válido até:</b> ${expiresAt.toLocaleDateString('pt-BR')} às ${expiresAt.toLocaleTimeString('pt-BR')}\n\n` +
+ ` <b>ATENÇÃO:</b> <i>O link abaixo é de uso único e pessoal. Ele se autodestrói após o primeiro clique!</i>`;
 
  const keyboard = [
  [{ text: ' ENTRAR NO GRUPO VIP AGORA', url: inviteLink }],

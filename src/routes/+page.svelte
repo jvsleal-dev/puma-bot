@@ -81,7 +81,7 @@
 <a class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-surface-container-high hover:bg-surface-variant text-on-surface border border-outline-variant/40 font-headline-sm text-headline-sm font-medium active:scale-[0.98] transition-all group" href="#demo">
 <span class="material-symbols-outlined text-primary text-[18px]">play_circle</span>
  Ver Demonstração do Funil (2 min)
- <kbd class="hidden sm:inline-block px-1.5 py-0.5 rounded bg-surface-container-lowest border border-outline-variant/30 text-label-tabular font-label-tabular text-[11px] text-on-surface-variant group-hover:text-on-surface">⌘K</kbd>
+ <kbd class="hidden sm:inline-block px-1.5 py-0.5 rounded bg-surface-container-lowest border border-outline-variant/30 text-label-tabular font-label-tabular text-[11px] text-on-surface-variant group-hover:text-on-surface">K</kbd>
 </a>
 </div>
 <!-- Telemetry Metric Strip -->
@@ -833,7 +833,7 @@
  </div>
 </div>
 
-<!-- Modal Interativo do Simulador de Funil (⌘K / Ver Demonstração) -->
+<!-- Modal Interativo do Simulador de Funil (K / Ver Demonstração) -->
 <div id="demo-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 transition-opacity">
  <div class="relative w-full max-w-2xl bg-surface-container-low border border-outline-variant/40 rounded-2xl shadow-2xl overflow-hidden p-6">
  <div class="flex items-center justify-between pb-4 border-b border-outline-variant/20 mb-5">
@@ -960,7 +960,7 @@
  });
  });
 
- // Atalho de teclado ⌘K / Ctrl+K
+ // Atalho de teclado K / Ctrl+K
  document.addEventListener('keydown', (e) => {
  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
  e.preventDefault();

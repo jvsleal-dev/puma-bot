@@ -163,7 +163,7 @@ export const POST: RequestHandler = async ({ params, request, platform }) => {
  ` <b>Valor:</b> R$ ${amount.toFixed(2).replace('.', ',')}\n\n` +
  ` <i>Toque no código abaixo para copiar:</i>\n\n` +
  `<code>${pixCharge.copyPaste}</code>\n\n` +
- `⏳ <i>O PIX vence em 30 minutos. Assim que pagar, seu link VIP exclusivo de uso único será entregue aqui automaticamente!</i>`;
+ ` <i>O PIX vence em 30 minutos. Assim que pagar, seu link VIP exclusivo de uso único será entregue aqui automaticamente!</i>`;
 
  const pixKeyboard = [
  [{ text: ' Já realizei o pagamento / Verificar', callback_data: `check:${pixCharge.txid}` }],

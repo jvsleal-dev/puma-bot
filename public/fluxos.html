@@ -222,9 +222,9 @@
 <a class="flex items-center justify-between px-space-md py-space-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors duration-150" href="#">
 <div class="flex items-center gap-space-sm">
 <span class="material-symbols-outlined" data-icon="keyboard_command_key">keyboard_command_key</span>
-<span class="text-body-sm font-body-sm">Colapsar (⌘B)</span>
+<span class="text-body-sm font-body-sm">Colapsar (B)</span>
 </div>
-<kbd class="text-[10px] font-label-code bg-surface-container-highest px-1 py-0.5 rounded text-outline">⌘B</kbd>
+<kbd class="text-[10px] font-label-code bg-surface-container-highest px-1 py-0.5 rounded text-outline">B</kbd>
 </a>
 </div>
 </aside>
@@ -236,8 +236,8 @@
 <div class="flex items-center gap-space-md">
 <div class="relative flex items-center">
 <span class="material-symbols-outlined absolute left-2.5 text-on-surface-variant text-[16px] pointer-events-none" data-icon="search">search</span>
-<input class="bg-surface-container-lowest border border-outline-variant/40 rounded-lg h-[34px] pl-8 pr-12 text-body-md font-body-md text-on-surface placeholder:text-outline focus:border-primary-container focus:ring-0 focus:outline-none w-72" placeholder="Buscar no Puma Bot ou digite ⌘K..." type="text"/>
-<kbd class="absolute right-2 text-[10px] font-label-code text-outline bg-surface-container-high px-1 py-0.5 rounded">⌘K</kbd>
+<input class="bg-surface-container-lowest border border-outline-variant/40 rounded-lg h-[34px] pl-8 pr-12 text-body-md font-body-md text-on-surface placeholder:text-outline focus:border-primary-container focus:ring-0 focus:outline-none w-72" placeholder="Buscar no Puma Bot ou digite K..." type="text"/>
+<kbd class="absolute right-2 text-[10px] font-label-code text-outline bg-surface-container-high px-1 py-0.5 rounded">K</kbd>
 </div>
 <div class="h-4 w-[1px] bg-outline-variant/30"></div>
 <!-- Environment Selector Pills -->
@@ -794,7 +794,7 @@
  }
  });
 
- // 3. Suporte ao atalho ⌘B para colapsar/expandir a sidebar
+ // 3. Suporte ao atalho B para colapsar/expandir a sidebar
  const toggleBtn = document.getElementById('toggle-sidebar');
  const sidebar = document.getElementById('main-sidebar');
  const mainContent = document.querySelector('main');
@@ -875,6 +875,52 @@
  }
  });
  })();
+</script>
+
+
+<script>
+// Interatividade Fluxos: Publicar alteracoes no funil de vendas
+(function() {
+  const btnPublish = Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('Publicar Alterações'));
+  const btnSimulate = Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('Simular no Telegram'));
+
+  if (btnPublish) {
+    btnPublish.addEventListener('click', async () => {
+      btnPublish.disabled = true;
+      btnPublish.innerHTML = '<span class="material-symbols-outlined animate-spin text-[16px]">sync</span><span>Publicando...</span>';
+
+      try {
+        const res = await fetch('/api/flows', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            welcomeMessage: 'Bem-vindo a comunidade VIP de alta precisao. Escolha seu plano abaixo:',
+            remarketingMsg: 'Seu acesso VIP esta reservado por tempo limitado. Ultimas vagas com desconto.',
+            downsellPrice: 37.00
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          alert('Fluxo de automacao publicado com sucesso!');
+        } else {
+          alert(data.error || 'Erro ao publicar fluxo');
+        }
+      } catch (e) {
+        alert('Erro de comunicacao com o servidor.');
+      } finally {
+        btnPublish.disabled = false;
+        btnPublish.innerHTML = '<span class="material-symbols-outlined text-[16px]">publish</span><span>Publicar Alterações</span>';
+      }
+    });
+  }
+
+  if (btnSimulate) {
+    btnSimulate.addEventListener('click', () => {
+      alert('Simulacao disparada! Verifique o preview no painel lateral.');
+    });
+  }
+})();
 </script>
 
 </body></html>

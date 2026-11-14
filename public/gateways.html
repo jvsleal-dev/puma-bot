@@ -215,9 +215,9 @@
 <button class="w-full flex items-center justify-between px-space-md py-space-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors duration-150">
 <span class="flex items-center gap-space-sm text-body-sm font-body-sm">
 <span class="material-symbols-outlined" style="font-size: 18px;">keyboard_command_key</span>
- Colapsar (⌘B)
+ Colapsar (B)
  </span>
-<span class="text-[10px] font-label-code text-outline border border-outline-variant/40 px-1 rounded">⌘B</span>
+<span class="text-[10px] font-label-code text-outline border border-outline-variant/40 px-1 rounded">B</span>
 </button>
 </div>
 </div>
@@ -230,7 +230,7 @@
 <div class="relative w-64">
 <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
 <input class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg pl-8 pr-3 py-1.5 text-body-md font-body-md text-on-surface placeholder-outline focus:border-primary-container focus:outline-none transition-colors" placeholder="Buscar gateways, logs, tx..." type="text"/>
-<kbd class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-label-code text-outline bg-surface-container px-1 py-0.5 rounded border border-outline-variant/30">⌘K</kbd>
+<kbd class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-label-code text-outline bg-surface-container px-1 py-0.5 rounded border border-outline-variant/30">K</kbd>
 </div>
 <div class="hidden xl:flex items-center gap-2 pl-2 border-l border-outline-variant/30">
 <span class="text-[11px] font-label-tabular text-outline">LATÊNCIA GERAL:</span>
@@ -862,6 +862,17 @@
 
  // Simulate customer confirming PIX payment
  function simulateCustomerPayment() {
+  fetch('/api/webhook/pix', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      txid: 'tx_gateway_sim_' + Date.now(),
+      amount: 47.90,
+      planName: 'VIP Mensal',
+      telegramUsername: 'cliente_simulado',
+      telegramFirstName: 'Comprador Teste'
+    })
+  }).catch(e => console.warn('Webhook sim post:', e));
  const term = document.getElementById('terminalLog');
  const termStatus = document.getElementById('termStatus');
  const now = new Date().toLocaleTimeString();
@@ -913,7 +924,7 @@
  }
  });
 
- // 3. Suporte ao atalho ⌘B para colapsar/expandir a sidebar
+ // 3. Suporte ao atalho B para colapsar/expandir a sidebar
  const toggleBtn = document.getElementById('toggle-sidebar');
  const sidebar = document.getElementById('main-sidebar');
  const mainContent = document.querySelector('main');

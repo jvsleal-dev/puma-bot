@@ -6,7 +6,7 @@ Plataforma SaaS desenvolvida a partir do projeto Stitch (`projects/1790671994764
 
 ---
 
-## 🚀 Como Iniciar a Aplicação
+##  Como Iniciar a Aplicação
 
 Para iniciar o servidor local com a Landing Page, Cadastro, Login e Painel:
 
@@ -22,7 +22,7 @@ Acesse no navegador:
 
 ---
 
-## 📦 Estrutura de Arquivos
+##  Estrutura de Arquivos
 
 ```text
 puma-bot/
@@ -40,6 +40,6 @@ puma-bot/
 
 ---
 
-## ⚡ Integração Stitch & SvelteKit
+##  Integração Stitch & SvelteKit
 O projeto foi estruturado para suportar transição direta para SvelteKit (`+page.svelte`), com componentes desacoplados e fluxo nativo de ponta a ponta.
 

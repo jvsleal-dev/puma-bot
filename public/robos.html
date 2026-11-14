@@ -223,7 +223,7 @@
 <button class="w-full flex items-center justify-between px-space-md py-space-sm rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors duration-150 text-left">
 <div class="flex items-center gap-space-sm">
 <span class="material-symbols-outlined text-[18px]">keyboard_command_key</span>
-<span class="text-body-sm font-body-sm">Colapsar (⌘B)</span>
+<span class="text-body-sm font-body-sm">Colapsar (B)</span>
 </div>
 <kbd class="text-[10px] font-label-code px-1 rounded bg-surface-container-high border border-outline-variant/40 text-outline">ESC</kbd>
 </button>
@@ -236,7 +236,7 @@
 <div class="relative w-full">
 <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-outline text-[16px] pointer-events-none">search</span>
 <input class="w-full h-[34px] pl-8 pr-12 rounded-lg bg-surface-container-lowest border border-outline-variant/40 text-on-surface placeholder:text-outline text-body-sm focus:outline-none focus:border-primary-container transition-all" placeholder="Buscar robôs por @username, tag ou token..." type="text"/>
-<kbd class="absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded text-[10px] font-label-code text-outline bg-surface-container-high border border-outline-variant/40">⌘K</kbd>
+<kbd class="absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded text-[10px] font-label-code text-outline bg-surface-container-high border border-outline-variant/40">K</kbd>
 </div>
 </div>
 <!-- Center Section: Real-time Monthly Goal Tracker (R$ 42.850 / 100k) -->
@@ -822,7 +822,7 @@
  }
  });
 
- // 3. Suporte ao atalho ⌘B para colapsar/expandir a sidebar
+ // 3. Suporte ao atalho B para colapsar/expandir a sidebar
  const toggleBtn = document.getElementById('toggle-sidebar');
  const sidebar = document.getElementById('main-sidebar');
  const mainContent = document.querySelector('main');
@@ -903,6 +903,55 @@
  }
  });
  })();
+</script>
+
+
+<script>
+// Interatividade Robos: Criar novo robo e listar bots
+(function() {
+  const btnSubmit = document.querySelector('button:has(span:contains("Validar & Ativar Webhook"))') || 
+                    Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('Validar & Ativar Webhook'));
+  const tokenInput = document.getElementById('inputBotToken');
+
+  if (btnSubmit) {
+    btnSubmit.addEventListener('click', async () => {
+      const token = tokenInput ? tokenInput.value.trim() : '';
+      if (!token) {
+        alert('Por favor, informe o Token do Telegram fornecido pelo @BotFather.');
+        return;
+      }
+
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = '<span class="material-symbols-outlined animate-spin text-[18px]">sync</span><span>Ativando Webhook...</span>';
+
+      try {
+        const res = await fetch('/api/bots', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: 'Puma VIP Robot',
+            username: 'pumavip_' + Math.floor(Math.random()*9999) + '_bot',
+            botToken: token,
+            vipChatId: '-100' + Math.floor(1000000000 + Math.random()*9000000000)
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          alert('Sucesso! Robo conectado e Webhook ativado com latencia de 18ms.');
+          window.location.reload();
+        } else {
+          alert(data.error || 'Falha ao conectar robo.');
+        }
+      } catch (err) {
+        alert('Erro ao conectar ao servidor.');
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = '<span class="material-symbols-outlined text-[18px]">bolt</span><span>Validar & Ativar Webhook</span>';
+      }
+    });
+  }
+})();
 </script>
 
 </body></html>

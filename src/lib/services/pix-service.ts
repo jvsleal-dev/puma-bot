@@ -71,8 +71,8 @@ export class PixService {
  ` <b>PAGAMENTO CONFIRMADO!</b>\n\n` +
  ` Seu acesso ao <b>Grupo VIP</b> foi liberado!\n\n` +
  ` <b>Duração:</b> ${sale.durationDays} dias\n` +
- `⏳ <b>Válido até:</b> ${expiresAt.toLocaleDateString('pt-BR')} às ${expiresAt.toLocaleTimeString('pt-BR')}\n\n` +
- `️ <i>O link abaixo é pessoal e de uso único (expira após o primeiro clique):</i>`;
+ ` <b>Válido até:</b> ${expiresAt.toLocaleDateString('pt-BR')} às ${expiresAt.toLocaleTimeString('pt-BR')}\n\n` +
+ ` <i>O link abaixo é pessoal e de uso único (expira após o primeiro clique):</i>`;
 
  await sendTelegramMessage(bot.botToken, sale.telegramUserId, text, {
  inline_keyboard: [

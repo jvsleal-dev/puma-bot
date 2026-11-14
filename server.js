@@ -16,436 +16,708 @@ const JWT_SECRET = process.env.JWT_SECRET || 'puma_bot_jwt_super_secret_high_ent
 // =============================================================================
 
 function hashPassword(password) {
- const salt = crypto.randomBytes(16).toString('hex');
- const hash = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
- return `${salt}:${hash}`;
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
+  return `${salt}:${hash}`;
 }
 
 function verifyPassword(password, storedHash) {
- if (!storedHash || !storedHash.includes(':')) return false;
- const [salt, originalHash] = storedHash.split(':');
- const computedHash = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
+  if (!storedHash || !storedHash.includes(':')) return false;
+  const [salt, originalHash] = storedHash.split(':');
+  const computedHash = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
 
- const bufOriginal = Buffer.from(originalHash, 'hex');
- const bufComputed = Buffer.from(computedHash, 'hex');
+  const bufOriginal = Buffer.from(originalHash, 'hex');
+  const bufComputed = Buffer.from(computedHash, 'hex');
 
- if (bufOriginal.length !== bufComputed.length) return false;
- return crypto.timingSafeEqual(bufOriginal, bufComputed);
+  if (bufOriginal.length !== bufComputed.length) return false;
+  return crypto.timingSafeEqual(bufOriginal, bufComputed);
 }
 
 function generateToken(payload, expiresInSeconds = 86400 * 7) {
- const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
- const claims = Buffer.from(
- JSON.stringify({
- ...payload,
- iat: Math.floor(Date.now() / 1000),
- exp: Math.floor(Date.now() / 1000) + expiresInSeconds
- })
- ).toString('base64url');
+  const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+  const claims = Buffer.from(
+    JSON.stringify({
+      ...payload,
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + expiresInSeconds
+    })
+  ).toString('base64url');
 
- const signature = crypto
- .createHmac('sha256', JWT_SECRET)
- .update(`${header}.${claims}`)
- .digest('base64url');
+  const signature = crypto
+    .createHmac('sha256', JWT_SECRET)
+    .update(`${header}.${claims}`)
+    .digest('base64url');
 
- return `${header}.${claims}.${signature}`;
+  return `${header}.${claims}.${signature}`;
 }
 
 function verifyToken(token) {
- if (!token || typeof token !== 'string') return null;
- const parts = token.split('.');
- if (parts.length !== 3) return null;
+  if (!token || typeof token !== 'string') return null;
+  const parts = token.split('.');
+  if (parts.length !== 3) return null;
 
- const [header, claims, signature] = parts;
+  const [header, claims, signature] = parts;
 
- const expectedSignature = crypto
- .createHmac('sha256', JWT_SECRET)
- .update(`${header}.${claims}`)
- .digest('base64url');
+  const expectedSignature = crypto
+    .createHmac('sha256', JWT_SECRET)
+    .update(`${header}.${claims}`)
+    .digest('base64url');
 
- const bufExpected = Buffer.from(expectedSignature);
- const bufActual = Buffer.from(signature);
+  const bufExpected = Buffer.from(expectedSignature);
+  const bufActual = Buffer.from(signature);
 
- if (bufExpected.length !== bufActual.length) return null;
- if (!crypto.timingSafeEqual(bufExpected, bufActual)) return null;
+  if (bufExpected.length !== bufActual.length) return null;
+  if (!crypto.timingSafeEqual(bufExpected, bufActual)) return null;
 
- try {
- const payload = JSON.parse(Buffer.from(claims, 'base64url').toString('utf8'));
- if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) return null;
- return payload;
- } catch (e) {
- return null;
- }
+  try {
+    const payload = JSON.parse(Buffer.from(claims, 'base64url').toString('utf8'));
+    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) return null;
+    return payload;
+  } catch (e) {
+    return null;
+  }
 }
 
 // In-Memory Rate Limiter (Token Bucket)
 const rateLimitMap = new Map();
 function checkRateLimit(ip, maxRequests = 60, windowSeconds = 60) {
- const now = Date.now();
- const bucket = rateLimitMap.get(ip) || { tokens: maxRequests, lastRefill: now };
+  const now = Date.now();
+  const bucket = rateLimitMap.get(ip) || { tokens: maxRequests, lastRefill: now };
 
- const elapsedTime = (now - bucket.lastRefill) / 1000;
- bucket.tokens = Math.min(maxRequests, bucket.tokens + elapsedTime * (maxRequests / windowSeconds));
- bucket.lastRefill = now;
+  const elapsedTime = (now - bucket.lastRefill) / 1000;
+  bucket.tokens = Math.min(maxRequests, bucket.tokens + elapsedTime * (maxRequests / windowSeconds));
+  bucket.lastRefill = now;
 
- if (bucket.tokens >= 1) {
- bucket.tokens -= 1;
- rateLimitMap.set(ip, bucket);
- return { allowed: true, remaining: Math.floor(bucket.tokens) };
- } else {
- rateLimitMap.set(ip, bucket);
- return { allowed: false, remaining: 0 };
- }
+  if (bucket.tokens >= 1) {
+    bucket.tokens -= 1;
+    rateLimitMap.set(ip, bucket);
+    return { allowed: true, remaining: Math.floor(bucket.tokens) };
+  } else {
+    rateLimitMap.set(ip, bucket);
+    return { allowed: false, remaining: 0 };
+  }
+}
+
+function sanitizeInput(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/[<>]/g, '').trim();
+}
+
+// Helper: Extrair usuário autenticado via Bearer Token
+function getAuthUser(req) {
+  const auth = req.headers['authorization'];
+  if (!auth || !auth.startsWith('Bearer ')) return null;
+  const token = auth.substring(7);
+  return verifyToken(token);
 }
 
 // =============================================================================
-// Database Initialization
+// Database Initialization & JSON Persistence
 // =============================================================================
 const DB_FILE = path.join(__dirname, 'database.json');
 let db = {
- users: [],
- bots: [
- {
- id: 'bot_alpha_01',
- name: 'Puma VIP Sinais Alpha',
- username: 'PumaVIP_AlphaBot',
- botToken: 'mock_token_dev',
- webhookSecret: 'puma_secret_token_change_in_production_32chars',
- vipChatId: '-10088291039',
- active: true,
- plans: [
- { id: 'plan_1', title: 'Mensal VIP', price: 47.90, durationDays: 30 },
- { id: 'plan_2', title: 'Trimestral VIP', price: 119.90, durationDays: 90 },
- { id: 'plan_3', title: 'Vitalício Anual', price: 297.00, durationDays: 365 }
- ]
- }
- ],
- sales: [
- {
- id: 'tx_884920410',
- botId: 'bot_alpha_01',
- telegramUserId: '582910482',
- telegramUsername: 'lucas_trade',
- telegramFirstName: 'Lucas Alencar',
- planName: 'VIP Mensal (Sinais)',
- amount: 47.90,
- pixTxid: 'tx_884920410',
- status: 'PAID',
- createdAt: new Date(Date.now() - 2 * 60 * 1000).toISOString()
- }
- ],
- vipSubscriptions: []
+  users: [],
+  bots: [
+    {
+      id: 'bot_alpha_01',
+      userId: 'usr_default',
+      name: 'Puma VIP Sinais Alpha',
+      username: 'PumaVIP_AlphaBot',
+      botToken: '7182948291:AAH9bK8d_j29LmQ09aBv8x7P12-xX9',
+      webhookSecret: 'puma_secret_token_change_in_production_32chars',
+      vipChatId: '-10088291039',
+      active: true,
+      plans: [
+        { id: 'plan_1', title: 'Mensal VIP', price: 47.90, durationDays: 30 },
+        { id: 'plan_2', title: 'Trimestral VIP', price: 119.90, durationDays: 90 },
+        { id: 'plan_3', title: 'Vitalicio Anual', price: 297.00, durationDays: 365 }
+      ]
+    }
+  ],
+  flows: [
+    {
+      id: 'flow_alpha_01',
+      botId: 'bot_alpha_01',
+      welcomeMessage: 'Ola! Bem-vindo a comunidade VIP de alta precisao. Escolha seu plano abaixo para liberar o acesso instantaneo via PIX:',
+      mediaUrl: '',
+      mediaType: 'photo',
+      remarketingMsg: 'Notamos que seu PIX ainda nao foi liquidado. Restam apenas 10 minutos para garantir sua vaga.',
+      downsellPrice: 37.00,
+      updatedAt: new Date().toISOString()
+    }
+  ],
+  sales: [
+    {
+      id: 'tx_884920410',
+      botId: 'bot_alpha_01',
+      telegramUserId: '582910482',
+      telegramUsername: 'lucas_trade',
+      telegramFirstName: 'Lucas Alencar',
+      planName: 'VIP Mensal (Sinais)',
+      amount: 47.90,
+      pixTxid: 'tx_884920410',
+      status: 'PAID',
+      paidAt: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
+      createdAt: new Date(Date.now() - 2 * 60 * 1000).toISOString()
+    },
+    {
+      id: 'tx_884919871',
+      botId: 'bot_alpha_01',
+      telegramUserId: '918274019',
+      telegramUsername: 'mari_crypto',
+      telegramFirstName: 'Mariana Silveira',
+      planName: 'Trimestral Vitalicio',
+      amount: 147.00,
+      pixTxid: 'tx_884919871',
+      status: 'PAID',
+      paidAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+      createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString()
+    },
+    {
+      id: 'tx_884918223',
+      botId: 'bot_alpha_01',
+      telegramUserId: '482019482',
+      telegramUsername: 'rodrigo_invest',
+      telegramFirstName: 'Rodrigo M.',
+      planName: 'Mensal VIP',
+      amount: 47.90,
+      pixTxid: 'tx_884918223',
+      status: 'PENDING',
+      createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString()
+    }
+  ],
+  gateways: {
+    provider: 'PUSHINPAY',
+    token: 'pushin_sec_994829184910284019284019284',
+    pixKey: 'financeiro@pumabot.com.br',
+    updatedAt: new Date().toISOString()
+  },
+  vipSubscriptions: []
 };
 
 if (fs.existsSync(DB_FILE)) {
- try {
- const loaded = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
- db.users = loaded.users || [];
- if (loaded.bots?.length) db.bots = loaded.bots;
- if (loaded.sales?.length) db.sales = loaded.sales;
- } catch (e) {
- console.error("Erro ao carregar banco:", e);
- }
+  try {
+    const loaded = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+    db.users = loaded.users || [];
+    if (loaded.bots?.length) db.bots = loaded.bots;
+    if (loaded.flows?.length) db.flows = loaded.flows;
+    if (loaded.sales?.length) db.sales = loaded.sales;
+    if (loaded.gateways) db.gateways = loaded.gateways;
+    if (loaded.vipSubscriptions?.length) db.vipSubscriptions = loaded.vipSubscriptions;
+  } catch (e) {
+    console.error('Erro ao carregar banco:', e);
+  }
 } else {
- saveDB();
+  saveDB();
 }
 
 function saveDB() {
- fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+  fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
 }
 
 const MIME_TYPES = {
- '.html': 'text/html; charset=utf-8',
- '.css': 'text/css; charset=utf-8',
- '.js': 'application/javascript; charset=utf-8',
- '.json': 'application/json; charset=utf-8',
- '.png': 'image/png',
- '.jpg': 'image/jpeg',
- '.svg': 'image/svg+xml',
- '.ico': 'image/x-icon'
+  '.html': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon'
 };
 
 function parseBody(req) {
- return new Promise((resolve, reject) => {
- let body = '';
- let bytes = 0;
- const MAX_BODY_SIZE = 1024 * 1024; // Proteção contra DoS: máx 1MB
+  return new Promise((resolve, reject) => {
+    let body = '';
+    let bytes = 0;
+    const MAX_BODY_SIZE = 1024 * 1024; // Protecao contra DoS: max 1MB
 
- req.on('data', chunk => {
- bytes += chunk.length;
- if (bytes > MAX_BODY_SIZE) {
- req.destroy();
- reject(new Error('Payload too large'));
- return;
- }
- body += chunk;
- });
+    req.on('data', chunk => {
+      bytes += chunk.length;
+      if (bytes > MAX_BODY_SIZE) {
+        req.destroy();
+        reject(new Error('Payload too large'));
+        return;
+      }
+      body += chunk;
+    });
 
- req.on('end', () => {
- try {
- resolve(body ? JSON.parse(body) : {});
- } catch (err) {
- resolve({});
- }
- });
- req.on('error', reject);
- });
+    req.on('end', () => {
+      try {
+        resolve(body ? JSON.parse(body) : {});
+      } catch (err) {
+        resolve({});
+      }
+    });
+    req.on('error', reject);
+  });
+}
+
+function sendJson(res, statusCode, data) {
+  res.writeHead(statusCode, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(data));
 }
 
 const server = http.createServer(async (req, res) => {
- const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
- const pathname = parsedUrl.pathname;
- const startTime = Date.now();
- const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+  const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
+  const pathname = parsedUrl.pathname.replace(/\/$/, '') || '/';
+  const startTime = Date.now();
+  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
 
- // ---------------------------------------------------------------------------
- // 1. Headers de Segurança Hardened (OWASP / Security Best Practices)
- // ---------------------------------------------------------------------------
- res.setHeader('X-Content-Type-Options', 'nosniff');
- res.setHeader('X-Frame-Options', 'DENY');
- res.setHeader('X-XSS-Protection', '1; mode=block');
- res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
- res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  // ---------------------------------------------------------------------------
+  // 1. Headers de Seguranca Hardened (OWASP Best Practices)
+  // ---------------------------------------------------------------------------
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
 
- // CORS Restrito
- res.setHeader('Access-Control-Allow-Origin', '*');
- res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
- res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Telegram-Bot-Api-Secret-Token, X-Signature-256');
+  // CORS Restrito
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Telegram-Bot-Api-Secret-Token, X-Signature-256');
 
- if (req.method === 'OPTIONS') {
- res.writeHead(204);
- res.end();
- return;
- }
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
 
- // ---------------------------------------------------------------------------
- // 2. Proteção de Rate Limiting
- // ---------------------------------------------------------------------------
- const isApi = pathname.startsWith('/api/');
- const limit = checkRateLimit(clientIp, isApi ? 120 : 300, 60);
+  // ---------------------------------------------------------------------------
+  // 2. Protecao de Rate Limiting
+  // ---------------------------------------------------------------------------
+  const isApi = pathname.startsWith('/api/');
+  const limit = checkRateLimit(clientIp, isApi ? 120 : 300, 60);
 
- res.setHeader('X-RateLimit-Remaining', limit.remaining);
- if (!limit.allowed) {
- res.writeHead(429, { 'Content-Type': 'application/json' });
- return res.end(JSON.stringify({ error: 'Too many requests. Please wait a minute.' }));
- }
+  res.setHeader('X-RateLimit-Remaining', limit.remaining);
+  if (!limit.allowed) {
+    return sendJson(res, 429, { error: 'Too many requests. Please wait a minute.' });
+  }
 
- // ===========================================================================
- // 3. API: Autenticação Segura com PBKDF2 e JWT
- // ===========================================================================
- if ((pathname === '/api/auth/register' || pathname === '/api/auth/register/') && req.method === 'POST') {
- const data = await parseBody(req);
- const { name, email, password } = data;
+  // ===========================================================================
+  // 3. API: Autenticacao (Registro e Login com PBKDF2 e JWT)
+  // ===========================================================================
+  if (pathname === '/api/auth/register' && req.method === 'POST') {
+    const data = await parseBody(req);
+    const { name, email, password } = data;
 
- if (!name || !email || !password || password.length < 6) {
- res.writeHead(400, { 'Content-Type': 'application/json' });
- return res.end(JSON.stringify({ error: 'Dados inválidos. A senha deve ter no mínimo 6 caracteres.' }));
- }
+    if (!name || !email || !password || password.length < 6) {
+      return sendJson(res, 400, { error: 'Dados invalidos. A senha deve ter no minimo 6 caracteres.' });
+    }
 
- const emailClean = email.toLowerCase().trim();
- const existing = db.users.find(u => u.email.toLowerCase() === emailClean);
- if (existing) {
- res.writeHead(400, { 'Content-Type': 'application/json' });
- return res.end(JSON.stringify({ error: 'E-mail já cadastrado' }));
- }
+    const emailClean = email.toLowerCase().trim();
+    const existing = db.users.find(u => u.email.toLowerCase() === emailClean);
+    if (existing) {
+      return sendJson(res, 400, { error: 'E-mail ja cadastrado' });
+    }
 
- // Hash criptográfico PBKDF2 com Salt
- const passwordHash = hashPassword(password);
+    const passwordHash = hashPassword(password);
+    const newUser = {
+      id: 'usr_' + Date.now(),
+      name: sanitizeInput(name),
+      email: emailClean,
+      passwordHash,
+      createdAt: new Date().toISOString(),
+      plan: 'PRO Trial (14 dias)'
+    };
 
- const newUser = {
- id: 'usr_' + Date.now(),
- name: name.trim(),
- email: emailClean,
- passwordHash,
- createdAt: new Date().toISOString(),
- plan: 'PRO Trial (14 dias)'
- };
+    db.users.push(newUser);
+    saveDB();
 
- db.users.push(newUser);
- saveDB();
+    return sendJson(res, 201, {
+      success: true,
+      user: { id: newUser.id, name: newUser.name, email: newUser.email, plan: newUser.plan }
+    });
+  }
 
- res.writeHead(201, { 'Content-Type': 'application/json' });
- return res.end(JSON.stringify({
- success: true,
- user: { id: newUser.id, name: newUser.name, email: newUser.email, plan: newUser.plan }
- }));
- }
+  if (pathname === '/api/auth/login' && req.method === 'POST') {
+    const data = await parseBody(req);
+    const { email, password } = data;
 
- if ((pathname === '/api/auth/login' || pathname === '/api/auth/login/') && req.method === 'POST') {
- const data = await parseBody(req);
- const { email, password } = data;
+    const emailClean = (email || '').toLowerCase().trim();
+    const user = db.users.find(u => u.email.toLowerCase() === emailClean);
 
- const emailClean = (email || '').toLowerCase().trim();
- const user = db.users.find(u => u.email.toLowerCase() === emailClean);
+    const isValid = user ? (user.passwordHash ? verifyPassword(password, user.passwordHash) : user.password === password) : false;
 
- // Verificação de senha em tempo constante (anti-timing attack)
- const isValid = user ? (user.passwordHash ? verifyPassword(password, user.passwordHash) : user.password === password) : false;
+    if (!isValid || !user) {
+      return sendJson(res, 401, { error: 'Credenciais invalidas' });
+    }
 
- if (!isValid || !user) {
- res.writeHead(401, { 'Content-Type': 'application/json' });
- return res.end(JSON.stringify({ error: 'Credenciais inválidas' }));
- }
+    const token = generateToken({
+      sub: user.id,
+      email: user.email,
+      name: user.name,
+      plan: user.plan
+    });
 
- // Geração de JWT assinado com HMAC-SHA256
- const token = generateToken({
- sub: user.id,
- email: user.email,
- name: user.name,
- plan: user.plan
- });
+    return sendJson(res, 200, {
+      success: true,
+      token,
+      user: { id: user.id, name: user.name, email: user.email, plan: user.plan }
+    });
+  }
 
- res.writeHead(200, { 'Content-Type': 'application/json' });
- return res.end(JSON.stringify({
- success: true,
- token,
- user: { id: user.id, name: user.name, email: user.email, plan: user.plan }
- }));
- }
+  // ===========================================================================
+  // 4. API: Telemetria & Estatisticas (/api/stats)
+  // ===========================================================================
+  if (pathname === '/api/stats' && req.method === 'GET') {
+    const paidSales = db.sales.filter(s => s.status === 'PAID');
+    const totalApprovedRevenue = paidSales.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+    const totalSalesCount = db.sales.length;
+    const conversionRate = totalSalesCount > 0 ? ((paidSales.length / totalSalesCount) * 100).toFixed(1) : '0.0';
 
- // ===========================================================================
- // 4. API: Webhook PIX (/api/webhook/pix)
- // ===========================================================================
- if ((pathname === '/api/webhook/pix' || pathname === '/api/webhook/pix/') && req.method === 'POST') {
- const body = await parseBody(req);
- const txid = body.id || body.txid || body.data?.id || body.pix?.txid || `tx_${Date.now()}`;
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayLeads = db.sales.filter(s => (s.createdAt || '').slice(0, 10) === todayStr).length;
+    const activeVips = db.vipSubscriptions.filter(v => v.active).length || paidSales.length;
 
- res.writeHead(200, { 'Content-Type': 'application/json' });
- res.end(JSON.stringify({
- received: true,
- txid,
- latencyMs: Date.now() - startTime
- }));
+    return sendJson(res, 200, {
+      success: true,
+      stats: {
+        totalApprovedRevenue,
+        totalSalesCount,
+        paidSalesCount: paidSales.length,
+        conversionRate,
+        todayLeads,
+        activeVips
+      },
+      recentTransactions: db.sales.slice(0, 10)
+    });
+  }
 
- setImmediate(() => {
- let sale = db.sales.find(s => s.pixTxid === txid);
- if (!sale) {
- sale = {
- id: txid,
- botId: 'bot_alpha_01',
- telegramUserId: '998877665',
- telegramUsername: 'cliente_novo',
- telegramFirstName: 'Comprador PIX',
- planName: 'VIP Mensal',
- amount: 47.90,
- pixTxid: txid,
- status: 'PAID',
- paidAt: new Date().toISOString(),
- createdAt: new Date().toISOString()
- };
- db.sales.unshift(sale);
- } else {
- sale.status = 'PAID';
- sale.paidAt = new Date().toISOString();
- }
- saveDB();
- });
- return;
- }
+  // ===========================================================================
+  // 5. API: Gestao de Robos (/api/bots)
+  // ===========================================================================
+  if (pathname === '/api/bots' && req.method === 'GET') {
+    const safeBots = db.bots.map(b => ({
+      id: b.id,
+      name: b.name,
+      username: b.username,
+      vipChatId: b.vipChatId,
+      active: b.active,
+      plans: b.plans,
+      maskedToken: b.botToken ? `${b.botToken.slice(0, 6)}...${b.botToken.slice(-4)}` : 'N/A'
+    }));
+    return sendJson(res, 200, { success: true, bots: safeBots });
+  }
 
- // ===========================================================================
- // 5. API: Webhook Telegram (/api/webhook/telegram/:botId)
- // ===========================================================================
- if (pathname.startsWith('/api/webhook/telegram/') && req.method === 'POST') {
- const botId = pathname.replace('/api/webhook/telegram/', '').split('/')[0];
- const secretHeader = req.headers['x-telegram-bot-api-secret-token'];
- const bot = db.bots.find(b => b.id === botId);
+  if (pathname === '/api/bots' && req.method === 'POST') {
+    const body = await parseBody(req);
+    const { name, username, botToken, vipChatId } = body;
 
- // Validação estrita do Secret Token se configurado
- if (bot && bot.webhookSecret && secretHeader && bot.webhookSecret !== secretHeader) {
- res.writeHead(403, { 'Content-Type': 'application/json' });
- return res.end(JSON.stringify({ error: 'Invalid secret token' }));
- }
+    if (!name || !botToken) {
+      return sendJson(res, 400, { error: 'Nome e token do Telegram sao obrigatorios.' });
+    }
 
- const body = await parseBody(req);
+    const cleanUsername = (username || '').replace(/^@/, '').trim() || 'PumaBot_' + Math.floor(Math.random() * 9999);
+    const webhookSecret = crypto.randomBytes(32).toString('hex');
 
- res.writeHead(200, { 'Content-Type': 'application/json' });
- res.end(JSON.stringify({
- ok: true,
- botId,
- latencyMs: Date.now() - startTime
- }));
- return;
- }
+    const newBot = {
+      id: 'bot_' + Date.now(),
+      userId: 'usr_default',
+      name: sanitizeInput(name),
+      username: cleanUsername,
+      botToken: botToken.trim(),
+      webhookSecret,
+      vipChatId: vipChatId ? sanitizeInput(vipChatId) : '-100' + Math.floor(1000000000 + Math.random() * 9000000000),
+      active: true,
+      plans: [
+        { id: 'plan_1', title: 'Mensal VIP', price: 47.90, durationDays: 30 },
+        { id: 'plan_2', title: 'Trimestral VIP', price: 119.90, durationDays: 90 },
+        { id: 'plan_3', title: 'Vitalicio Anual', price: 297.00, durationDays: 365 }
+      ]
+    };
 
- // ===========================================================================
- // 6. API: Cron Job Expulsão Protegido (/api/cron/check-expired)
- // ===========================================================================
- if ((pathname === '/api/cron/check-expired' || pathname === '/api/cron/check-expired/') && req.method === 'GET') {
- const authHeader = req.headers['authorization'];
- const CRON_SECRET = process.env.CRON_SECRET || 'puma_cron_token_long_random_alphanumeric_here';
+    db.bots.push(newBot);
 
- if (process.env.NODE_ENV === 'production' && authHeader !== `Bearer ${CRON_SECRET}`) {
- res.writeHead(401, { 'Content-Type': 'application/json' });
- return res.end(JSON.stringify({ error: 'Unauthorized cron trigger' }));
- }
+    // Cria funil padrao
+    db.flows.push({
+      id: 'flow_' + newBot.id,
+      botId: newBot.id,
+      welcomeMessage: `Ola! Bem-vindo ao ${newBot.name}. Selecione o plano abaixo para liberar o acesso instantaneo via PIX:`,
+      mediaUrl: '',
+      mediaType: 'photo',
+      remarketingMsg: 'Seu acesso VIP esta reservado por tempo limitado.',
+      downsellPrice: 37.00,
+      updatedAt: new Date().toISOString()
+    });
 
- res.writeHead(200, { 'Content-Type': 'application/json' });
- return res.end(JSON.stringify({
- success: true,
- timestamp: new Date().toISOString(),
- results: {
- checked: db.vipSubscriptions.length,
- evicted: 0,
- errors: 0
- }
- }));
- }
+    saveDB();
 
- // ===========================================================================
- // 7. Servir Arquivos Estáticos com Proteção Path Traversal
- // ===========================================================================
- let targetFile = pathname;
- if (targetFile === '/' || targetFile === '') {
- targetFile = '/index.html';
- } else if (targetFile === '/cadastro' || targetFile === '/cadastro/') {
- targetFile = '/cadastro.html';
- } else if (targetFile === '/login' || targetFile === '/login/') {
- targetFile = '/login.html';
- } else if (targetFile === '/dashboard' || targetFile === '/dashboard/') {
- targetFile = '/dashboard.html';
- } else if (targetFile === '/robos' || targetFile === '/robos/') {
- targetFile = '/robos.html';
- } else if (targetFile === '/fluxos' || targetFile === '/fluxos/') {
- targetFile = '/fluxos.html';
- } else if (targetFile === '/clientes' || targetFile === '/clientes/') {
- targetFile = '/clientes.html';
- } else if (targetFile === '/gateways' || targetFile === '/gateways/') {
- targetFile = '/gateways.html';
- }
+    return sendJson(res, 201, {
+      success: true,
+      message: 'Robo conectado e webhook configurado com sucesso.',
+      bot: {
+        id: newBot.id,
+        name: newBot.name,
+        username: newBot.username,
+        vipChatId: newBot.vipChatId,
+        active: newBot.active,
+        webhookUrl: `/api/webhook/telegram/${newBot.id}`
+      }
+    });
+  }
 
- let filePath = path.join(PUBLIC_DIR, targetFile);
+  // ===========================================================================
+  // 6. API: Gestao de Fluxos (/api/flows)
+  // ===========================================================================
+  if (pathname === '/api/flows' && req.method === 'GET') {
+    return sendJson(res, 200, { success: true, flows: db.flows });
+  }
 
- // Proteção contra Path Traversal (ex: ../../etc/passwd)
- const relative = path.relative(PUBLIC_DIR, filePath);
- if (relative.startsWith('..') || path.isAbsolute(relative)) {
- res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
- return res.end('Access denied');
- }
+  if (pathname === '/api/flows' && req.method === 'POST') {
+    const body = await parseBody(req);
+    const { botId, welcomeMessage, remarketingMsg, downsellPrice, plans } = body;
 
- if (!path.extname(filePath)) {
- if (fs.existsSync(filePath + '.html')) {
- filePath += '.html';
- }
- }
+    const targetBotId = botId || db.bots[0]?.id;
+    let flow = db.flows.find(f => f.botId === targetBotId);
 
- fs.stat(filePath, (err, stats) => {
- if (err || !stats.isFile()) {
- res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
- res.end('Página não encontrada no Puma Bot');
- return;
- }
+    if (!flow) {
+      flow = {
+        id: 'flow_' + Date.now(),
+        botId: targetBotId,
+        welcomeMessage: welcomeMessage || '',
+        mediaUrl: '',
+        mediaType: 'photo',
+        remarketingMsg: remarketingMsg || '',
+        downsellPrice: Number(downsellPrice) || 37.00,
+        updatedAt: new Date().toISOString()
+      };
+      db.flows.push(flow);
+    } else {
+      if (welcomeMessage !== undefined) flow.welcomeMessage = welcomeMessage;
+      if (remarketingMsg !== undefined) flow.remarketingMsg = remarketingMsg;
+      if (downsellPrice !== undefined) flow.downsellPrice = Number(downsellPrice);
+      flow.updatedAt = new Date().toISOString();
+    }
 
- const ext = path.extname(filePath).toLowerCase();
- const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+    if (plans && Array.isArray(plans)) {
+      const bot = db.bots.find(b => b.id === targetBotId);
+      if (bot) {
+        bot.plans = plans;
+      }
+    }
 
- res.writeHead(200, { 'Content-Type': contentType });
- fs.createReadStream(filePath).pipe(res);
- });
+    saveDB();
+    return sendJson(res, 200, { success: true, message: 'Fluxo de vendas atualizado com sucesso.', flow });
+  }
+
+  // ===========================================================================
+  // 7. API: Clientes & Vendas (/api/sales)
+  // ===========================================================================
+  if (pathname === '/api/sales' && req.method === 'GET') {
+    const statusFilter = parsedUrl.searchParams.get('status');
+    let filtered = db.sales;
+    if (statusFilter && statusFilter !== 'ALL') {
+      filtered = db.sales.filter(s => s.status === statusFilter.toUpperCase());
+    }
+    return sendJson(res, 200, { success: true, sales: filtered });
+  }
+
+  if (pathname.startsWith('/api/sales/') && pathname.endsWith('/resend-vip') && req.method === 'POST') {
+    const saleId = pathname.split('/')[3];
+    const sale = db.sales.find(s => s.id === saleId);
+
+    if (!sale) {
+      return sendJson(res, 404, { error: 'Transacao nao encontrada.' });
+    }
+
+    const mockInviteLink = `https://t.me/+PumaVIP_${crypto.randomBytes(4).toString('hex')}`;
+    return sendJson(res, 200, {
+      success: true,
+      message: `Link exclusivo reenviado para @${sale.telegramUsername || sale.telegramUserId}`,
+      inviteLink: mockInviteLink
+    });
+  }
+
+  // ===========================================================================
+  // 8. API: Gateways PIX (/api/gateways)
+  // ===========================================================================
+  if (pathname === '/api/gateways' && req.method === 'GET') {
+    return sendJson(res, 200, {
+      success: true,
+      gateways: {
+        provider: db.gateways.provider,
+        maskedToken: db.gateways.token ? `${db.gateways.token.slice(0, 8)}...${db.gateways.token.slice(-4)}` : 'N/A',
+        pixKey: db.gateways.pixKey,
+        updatedAt: db.gateways.updatedAt
+      }
+    });
+  }
+
+  if (pathname === '/api/gateways' && req.method === 'POST') {
+    const body = await parseBody(req);
+    const { provider, token, pixKey } = body;
+
+    if (provider) db.gateways.provider = provider.toUpperCase();
+    if (token) db.gateways.token = token.trim();
+    if (pixKey) db.gateways.pixKey = pixKey.trim();
+    db.gateways.updatedAt = new Date().toISOString();
+
+    saveDB();
+    return sendJson(res, 200, {
+      success: true,
+      message: 'Configuracoes de gateway salvas com sucesso.'
+    });
+  }
+
+  // ===========================================================================
+  // 9. API: Webhook PIX (/api/webhook/pix)
+  // ===========================================================================
+  if (pathname === '/api/webhook/pix' && req.method === 'POST') {
+    const body = await parseBody(req);
+    const txid = body.id || body.txid || body.data?.id || body.pix?.txid || `tx_${Date.now()}`;
+    const amount = Number(body.amount) || Number(body.valor) || 47.90;
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      received: true,
+      txid,
+      latencyMs: Date.now() - startTime
+    }));
+
+    setImmediate(() => {
+      let sale = db.sales.find(s => s.pixTxid === txid);
+      if (!sale) {
+        sale = {
+          id: txid,
+          botId: 'bot_alpha_01',
+          telegramUserId: body.telegramUserId || '998877665',
+          telegramUsername: body.telegramUsername || 'cliente_novo',
+          telegramFirstName: body.telegramFirstName || 'Comprador PIX',
+          planName: body.planName || 'VIP Mensal',
+          amount,
+          pixTxid: txid,
+          status: 'PAID',
+          paidAt: new Date().toISOString(),
+          createdAt: new Date().toISOString()
+        };
+        db.sales.unshift(sale);
+      } else {
+        sale.status = 'PAID';
+        sale.paidAt = new Date().toISOString();
+      }
+
+      // Adiciona na lista de assinantes VIP ativos
+      db.vipSubscriptions.push({
+        id: 'sub_' + Date.now(),
+        saleId: sale.id,
+        botId: sale.botId,
+        telegramUserId: sale.telegramUserId,
+        chatId: '-10088291039',
+        inviteLink: `https://t.me/+PumaVIP_${crypto.randomBytes(4).toString('hex')}`,
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        active: true,
+        createdAt: new Date().toISOString()
+      });
+
+      saveDB();
+    });
+    return;
+  }
+
+  // ===========================================================================
+  // 10. API: Webhook Telegram (/api/webhook/telegram/:botId)
+  // ===========================================================================
+  if (pathname.startsWith('/api/webhook/telegram/') && req.method === 'POST') {
+    const botId = pathname.replace('/api/webhook/telegram/', '').split('/')[0];
+    const secretHeader = req.headers['x-telegram-bot-api-secret-token'];
+    const bot = db.bots.find(b => b.id === botId);
+
+    // Validacao estrita do Secret Token se configurado
+    if (bot && bot.webhookSecret && secretHeader && bot.webhookSecret !== secretHeader) {
+      return sendJson(res, 403, { error: 'Invalid secret token' });
+    }
+
+    const body = await parseBody(req);
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      ok: true,
+      botId,
+      latencyMs: Date.now() - startTime
+    }));
+    return;
+  }
+
+  // ===========================================================================
+  // 11. API: Cron Job Expulsao Protegido (/api/cron/check-expired)
+  // ===========================================================================
+  if (pathname === '/api/cron/check-expired' && req.method === 'GET') {
+    const authHeader = req.headers['authorization'];
+    const CRON_SECRET = process.env.CRON_SECRET || 'puma_cron_token_long_random_alphanumeric_here';
+
+    if (process.env.NODE_ENV === 'production' && authHeader !== `Bearer ${CRON_SECRET}`) {
+      return sendJson(res, 401, { error: 'Unauthorized cron trigger' });
+    }
+
+    return sendJson(res, 200, {
+      success: true,
+      timestamp: new Date().toISOString(),
+      results: {
+        checked: db.vipSubscriptions.length,
+        evicted: 0,
+        errors: 0
+      }
+    });
+  }
+
+  // ===========================================================================
+  // 12. Servir Arquivos Estaticos com Protecao Path Traversal
+  // ===========================================================================
+  let targetFile = pathname;
+  if (targetFile === '/' || targetFile === '') {
+    targetFile = '/index.html';
+  } else if (targetFile === '/cadastro') {
+    targetFile = '/cadastro.html';
+  } else if (targetFile === '/login') {
+    targetFile = '/login.html';
+  } else if (targetFile === '/dashboard') {
+    targetFile = '/dashboard.html';
+  } else if (targetFile === '/robos') {
+    targetFile = '/robos.html';
+  } else if (targetFile === '/fluxos') {
+    targetFile = '/fluxos.html';
+  } else if (targetFile === '/clientes') {
+    targetFile = '/clientes.html';
+  } else if (targetFile === '/gateways') {
+    targetFile = '/gateways.html';
+  }
+
+  let filePath = path.join(PUBLIC_DIR, targetFile);
+
+  // Protecao contra Path Traversal (ex: ../../etc/passwd)
+  const relative = path.relative(PUBLIC_DIR, filePath);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
+    return res.end('Access denied');
+  }
+
+  if (!path.extname(filePath)) {
+    if (fs.existsSync(filePath + '.html')) {
+      filePath += '.html';
+    }
+  }
+
+  fs.stat(filePath, (err, stats) => {
+    if (err || !stats.isFile()) {
+      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end('Pagina nao encontrada no Puma Bot');
+      return;
+    }
+
+    const ext = path.extname(filePath).toLowerCase();
+    const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+
+    res.writeHead(200, { 'Content-Type': contentType });
+    fs.createReadStream(filePath).pipe(res);
+  });
 });
 
 server.listen(PORT, () => {
- console.log(`\n=============================================================`);
- console.log(` Puma Bot SaaS Hardened Security rodando em: http://localhost:${PORT}`);
- console.log(`️ Headers OWASP, PBKDF2 Hashing, JWT e Rate Limit Ativados`);
- console.log(`=============================================================\n`);
+  console.log(`\n=============================================================`);
+  console.log(` Puma Bot SaaS Hardened Security rodando em: http://localhost:${PORT}`);
+  console.log(` Headers OWASP, PBKDF2 Hashing, JWT e Rate Limit Ativados`);
+  console.log(`=============================================================\n`);
 });

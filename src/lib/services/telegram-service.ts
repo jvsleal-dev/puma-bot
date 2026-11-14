@@ -113,7 +113,7 @@ export class TelegramService {
  ` <b>Valor:</b> R$ ${plan.price.toFixed(2).replace('.', ',')}\n\n` +
  ` <i>Toque abaixo para copiar o código PIX:</i>\n\n` +
  `<code>${charge.copyPaste}</code>\n\n` +
- `⏳ <i>Vencimento em 30 minutos. O link VIP será enviado automaticamente aqui após a confirmação.</i>`;
+ ` <i>Vencimento em 30 minutos. O link VIP será enviado automaticamente aqui após a confirmação.</i>`;
 
  const keyboard = [
  [{ text: ' Verificar Status do Pagamento', callback_data: `check:${charge.txid}` }]
@@ -131,7 +131,7 @@ export class TelegramService {
  await kickExpiredMember(bot.botToken, sub.chatId, sub.telegramUserId);
 
  const text =
- `️ <b>SEU ACESSO VIP EXPIROU!</b>\n\n` +
+ ` <b>SEU ACESSO VIP EXPIROU!</b>\n\n` +
  `Sua assinatura no grupo VIP chegou ao fim.\n` +
  `Renove agora para continuar recebendo nossos conteúdos exclusivos:`;
 
