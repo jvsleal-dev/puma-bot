@@ -1,0 +1,111 @@
+{
+  "users": [
+    {
+      "id": "usr_1794667547191",
+      "name": "Admin Teste",
+      "email": "admin@pumabot.com",
+      "password": "senha123456",
+      "createdAt": "2026-11-14T14:45:47.191Z",
+      "plan": "PRO Trial (14 dias)",
+      "stats": {
+        "totalVendas": 0,
+        "pedidosPendentes": 0,
+        "botsAtivos": 1
+      }
+    },
+    {
+      "id": "usr_1794670622709",
+      "name": "Operador Stitch",
+      "email": "operador_1794670622543@pumabot.com",
+      "password": "PumaPassword#123",
+      "createdAt": "2026-11-14T15:37:02.709Z",
+      "plan": "PRO Trial (14 dias)"
+    },
+    {
+      "id": "usr_1794676802148",
+      "name": "Sec User",
+      "email": "sec_1794676802040@pumabot.com",
+      "passwordHash": "8600104d3ca1189ca985fe5cd7ad0418:5d32e9d6e8541c4a4e23dce935ed66b6efaca7681cf871377bb83566f0ef7bb8fbda0691fea19db433591cd19bb76af543bbe04f6cb72b2e04e9d4acf3a8fc98",
+      "createdAt": "2026-11-14T17:20:02.148Z",
+      "plan": "PRO Trial (14 dias)"
+    },
+    {
+      "id": "usr_1794677880194",
+      "name": "Operador Teste 1794677879943",
+      "email": "flow_1794677879943@pumabot.com",
+      "passwordHash": "7b8d456bf15701a6f130e6b5c4d4ac3d:93a3b6fd43c57b678276c63de4a46668147f4a63a1852fa1aef4aed8cd4ccbe28ac951cc55fa604e366d2ef101ea4a7be062e97137e11ac42282477db5f0f343",
+      "createdAt": "2026-11-14T17:38:00.194Z",
+      "plan": "PRO Trial (14 dias)"
+    }
+  ],
+  "bots": [
+    {
+      "id": "bot_alpha_01",
+      "name": "Puma VIP Sinais Alpha",
+      "username": "PumaVIP_AlphaBot",
+      "botToken": "mock_token_dev",
+      "vipChatId": "-10088291039",
+      "active": true,
+      "plans": [
+        {
+          "id": "plan_1",
+          "title": "Mensal VIP",
+          "price": 47.9,
+          "durationDays": 30
+        },
+        {
+          "id": "plan_2",
+          "title": "Trimestral VIP",
+          "price": 119.9,
+          "durationDays": 90
+        },
+        {
+          "id": "plan_3",
+          "title": "Vitalício Anual",
+          "price": 297,
+          "durationDays": 365
+        }
+      ]
+    }
+  ],
+  "sales": [
+    {
+      "id": "tx_123",
+      "botId": "bot_alpha_01",
+      "telegramUserId": "998877665",
+      "telegramUsername": "cliente_novo",
+      "telegramFirstName": "Comprador PIX",
+      "planName": "VIP Mensal",
+      "amount": 47.9,
+      "pixTxid": "tx_123",
+      "status": "PAID",
+      "paidAt": "2026-11-14T17:13:17.278Z",
+      "createdAt": "2026-11-14T17:13:17.278Z"
+    },
+    {
+      "id": "tx_884920410",
+      "botId": "bot_alpha_01",
+      "telegramUserId": "582910482",
+      "telegramUsername": "lucas_trade",
+      "telegramFirstName": "Lucas Alencar",
+      "planName": "VIP Mensal (Sinais)",
+      "amount": 47.9,
+      "pixTxid": "tx_884920410",
+      "status": "PAID",
+      "createdAt": "2026-11-14T17:10:24.512Z"
+    },
+    {
+      "id": "tx_884919871",
+      "botId": "bot_alpha_01",
+      "telegramUserId": "918274019",
+      "telegramUsername": "mari_crypto",
+      "telegramFirstName": "Mariana Silveira",
+      "planName": "Trimestral Vitalício",
+      "amount": 147,
+      "pixTxid": "tx_884919871",
+      "status": "PAID",
+      "createdAt": "2026-11-14T16:58:24.520Z"
+    }
+  ],
+  "vipSubscriptions": []
+}

@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Puma Bot — Pendências &amp; Clientes</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "primary-fixed-dim": "#d2bbff",
+            "inverse-surface": "#e5e1e4",
+            "outline-variant": "#4a4455",
+            "surface-container": "#201f22",
+            "on-background": "#e5e1e4",
+            "surface-container-highest": "#353437",
+            "tertiary-container": "#905b00",
+            "primary-fixed": "#eaddff",
+            "on-surface-variant": "#ccc3d8",
+            "surface-tint": "#d2bbff",
+            "secondary-fixed": "#6ffbbe",
+            "on-error": "#690005",
+            "secondary-fixed-dim": "#4edea3",
+            "on-tertiary-container": "#ffe1c0",
+            "surface-bright": "#39393b",
+            "secondary-container": "#00a572",
+            "on-tertiary-fixed": "#2a1700",
+            "on-secondary-fixed": "#002113",
+            "tertiary-fixed": "#ffddb8",
+            "outline": "#958da1",
+            "surface-container-low": "#1c1b1d",
+            "secondary": "#4edea3",
+            "on-tertiary-fixed-variant": "#653e00",
+            "background": "#131315",
+            "surface-container-lowest": "#0e0e10",
+            "on-secondary": "#003824",
+            "surface-variant": "#353437",
+            "on-error-container": "#ffdad6",
+            "surface": "#131315",
+            "on-primary-fixed-variant": "#5a00c6",
+            "primary": "#d2bbff",
+            "surface-dim": "#131315",
+            "error-container": "#93000a",
+            "on-secondary-container": "#00311f",
+            "tertiary-fixed-dim": "#ffb95f",
+            "on-primary": "#3f008e",
+            "error": "#ffb4ab",
+            "surface-container-high": "#2a2a2c",
+            "on-primary-fixed": "#25005a",
+            "on-surface": "#e5e1e4",
+            "tertiary": "#ffb95f",
+            "primary-container": "#7c3aed",
+            "on-secondary-fixed-variant": "#005236",
+            "on-tertiary": "#472a00",
+            "inverse-primary": "#732ee4",
+            "on-primary-container": "#ede0ff",
+            "inverse-on-surface": "#313032"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-md": "0.75rem",
+            "space-2xs": "0.125rem",
+            "gutter-desktop": "1.25rem",
+            "space-sm": "0.5rem",
+            "margin": "1rem",
+            "space-lg": "1rem",
+            "space-xl": "1.5rem",
+            "space-xs": "0.25rem",
+            "gutter": "1rem",
+            "margin-desktop": "2rem"
+          },
+          "fontFamily": {
+            "label-tabular": ["JetBrains Mono"],
+            "headline-xl-mobile": ["Geist"],
+            "headline-sm": ["Geist"],
+            "label-code": ["JetBrains Mono"],
+            "body-md": ["Inter"],
+            "headline-md": ["Geist"],
+            "headline-xl": ["Geist"],
+            "headline-lg": ["Geist"],
+            "body-lg": ["Inter"],
+            "label-badge": ["Inter"],
+            "body-sm": ["Inter"]
+          },
+          "fontSize": {
+            "label-tabular": ["13px", {"lineHeight": "18px", "fontWeight": "500"}],
+            "headline-xl-mobile": ["24px", {"lineHeight": "30px", "fontWeight": "600"}],
+            "headline-sm": ["15px", {"lineHeight": "20px", "fontWeight": "500"}],
+            "label-code": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+            "body-md": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+            "headline-md": ["18px", {"lineHeight": "24px", "fontWeight": "500"}],
+            "headline-xl": ["32px", {"lineHeight": "38px", "fontWeight": "600"}],
+            "headline-lg": ["24px", {"lineHeight": "30px", "fontWeight": "600"}],
+            "body-lg": ["15px", {"lineHeight": "22px", "fontWeight": "400"}],
+            "label-badge": ["11px", {"lineHeight": "14px", "fontWeight": "600"}],
+            "body-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 18px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    .tech-border {
+      border: 1px solid #222226;
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.07);
+    }
+    
+    .tech-border-interactive {
+      border: 1px solid #222226;
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.07);
+      transition: all 150ms ease;
+    }
+    .tech-border-interactive:hover {
+      border-color: #2E2E34;
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .btn-violet {
+      background-color: #7C3AED;
+      color: #FFFFFF;
+      border: 1px solid #8B5CF6;
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.20);
+    }
+    .btn-violet:hover {
+      background-color: #8B5CF6;
+    }
+    .btn-violet:active {
+      background-color: #6D28D9;
+      transform: scale(0.99);
+    }
+
+    .btn-secondary-carbon {
+      background-color: #18181B;
+      color: #F4F4F5;
+      border: 1px solid #222226;
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.07);
+    }
+    .btn-secondary-carbon:hover {
+      background-color: #222226;
+    }
+    .btn-secondary-carbon:active {
+      transform: scale(0.99);
+    }
+
+    /* Custom subtle scrollbar */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #09090B;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #222226;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #353437;
+    }
+  </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface antialiased min-h-screen flex selection:bg-primary-container selection:text-white">
+<!-- SIDEBAR NAVIGATION (Shared Component: SideNavBar) -->
+<aside class="fixed top-0 left-0 h-screen w-64 flex flex-col z-40 bg-surface dark:bg-surface border-r border-outline-variant/30 dark:border-outline-variant/30 shadow-none">
+<div class="w-64 h-full flex flex-col justify-between p-space-md bg-surface">
+<!-- Top Brand & Meta -->
+<div class="flex flex-col gap-space-md">
+<div class="flex items-center gap-space-sm px-space-xs py-space-2xs">
+<div class="w-9 h-9 rounded-lg bg-surface-container-high border border-outline-variant/30 flex items-center justify-center relative overflow-hidden shadow-inner">
+<img class="w-full h-full object-cover" data-alt="A stylized geometric puma cat head logo with layered dark violet and deep purple gradients, rendered with razor-sharp mechanical edges against a pure pitch-black background, echoing a high-performance modern fintech emblem." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOpAg61P32-fwFvAvL0KqDy3g04JEY_TGN7_6I6RtbzmVJuk5DQTStHQSUgg6mpO9LUSiw2KKxkoI8zkxC5_hfyCkvbavEl4Tne4ESXepec33xFQE3Uj0LaI8ofwQr8-WEbiBSp7tcwUN9DssW_LX_vL8h5O2D8CjxQZFhY4PKBBO8h7XN_X3-YL8vozLJyInYhdQkaB49x20qnLzwyHPIezRglJYdEfsPh_b8wviw"/>
+</div>
+<div class="flex flex-col">
+<span class="text-headline-sm font-headline-sm text-on-surface dark:text-on-surface tracking-tight font-semibold flex items-center gap-1.5">
+              Puma Bot
+              <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-label-code bg-surface-container-high border border-outline-variant/40 text-primary">PRO</span>
+</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-container"></span>
+              v2.4 PRO • Online
+            </span>
+</div>
+</div>
+<!-- Quick CTA Button -->
+<button class="w-full py-2 px-3 rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface border border-outline-variant/30 text-body-sm font-body-sm flex items-center justify-center gap-2 transition-all duration-150 active:scale-[0.99]">
+<span class="material-symbols-outlined text-primary text-[18px]">add_circle</span>
+<span class="font-medium text-body-sm">Conectar Bot</span>
+</button>
+<!-- Main Nav List -->
+<nav class="flex flex-col gap-1 mt-1">
+<!-- Item 1: Dashboard -->
+<a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:bg-surface-container dark:hover:bg-surface-container transition-colors duration-150 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant">dashboard</span>
+<span class="text-body-sm font-body-sm">Dashboard</span>
+</a>
+<!-- Item 2: Meus Robôs -->
+<a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:bg-surface-container dark:hover:bg-surface-container transition-colors duration-150 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant">smart_toy</span>
+<span class="text-body-sm font-body-sm">Meus Robôs</span>
+</a>
+<!-- Item 3: Meus Fluxos -->
+<a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:bg-surface-container dark:hover:bg-surface-container transition-colors duration-150 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant">account_tree</span>
+<span class="text-body-sm font-body-sm">Meus Fluxos</span>
+</a>
+<!-- Item 4: Gateways -->
+<a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:bg-surface-container dark:hover:bg-surface-container transition-colors duration-150 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined text-on-surface-variant">payments</span>
+<span class="text-body-sm font-body-sm">Gateways</span>
+</a>
+<!-- Item 5: Pendências & Clientes (ACTIVE MAPPED ITEM) -->
+<a class="flex items-center justify-between px-space-md py-space-sm rounded-lg bg-surface-container-high dark:bg-surface-container-high text-primary dark:text-primary border-l-2 border-primary active:scale-[0.99]" href="#">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary">receipt_long</span>
+<span class="text-body-sm font-body-sm font-medium">Pendências &amp; Clientes</span>
+</div>
+<span class="px-1.5 py-0.2 rounded font-label-code text-[11px] bg-primary-container text-on-primary-container font-semibold">32</span>
+</a>
+</nav>
+</div>
+<!-- Footer Nav Actions -->
+<div class="flex flex-col gap-1 pt-3 border-t border-outline-variant/30">
+<a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-body-sm font-body-sm">Configurações</span>
+</a>
+<a class="flex items-center justify-between px-space-md py-space-sm rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors duration-150" href="#">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined">keyboard_command_key</span>
+<span class="text-body-sm font-body-sm">Colapsar (⌘B)</span>
+</div>
+<span class="font-label-code text-[10px] text-outline">v2.4</span>
+</a>
+<!-- Operator User Pill -->
+<div class="mt-2 p-2 rounded-lg bg-surface-container-low border border-outline-variant/20 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-full bg-surface-container-highest border border-outline-variant/30 flex items-center justify-center font-label-code text-xs text-primary font-medium">
+              JP
+            </div>
+<div class="flex flex-col">
+<span class="text-body-sm font-body-sm text-on-surface font-medium leading-none">João Paulo</span>
+<span class="text-[10px] font-label-code text-on-surface-variant mt-0.5">Admin Geral</span>
+</div>
+</div>
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+</div>
+</div>
+</div>
+</aside>
+<!-- TOP APP BAR (Shared Component: TopNavBar) -->
+<header class="fixed top-0 left-64 right-0 h-16 z-30 flex items-center bg-surface dark:bg-surface border-b border-outline-variant/30 dark:border-outline-variant/30 shadow-none">
+<div class="flex justify-between items-center h-16 px-gutter-desktop w-full">
+<!-- Search Input Container -->
+<div class="flex items-center gap-3 w-96">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+<input class="w-full h-[34px] pl-9 pr-12 rounded bg-surface-container-lowest border border-outline-variant/30 text-on-surface placeholder:text-outline font-body-md text-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-all" placeholder="Buscar por @username, Telegram ID ou TXID PIX... (⌘K)" type="text"/>
+<kbd class="absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded text-[10px] font-label-code bg-surface-container text-outline border border-outline-variant/30">⌘K</kbd>
+</div>
+</div>
+<!-- Trailing Action Cluster -->
+<div class="flex items-center gap-3">
+<!-- Secondary Action: Simulador PIX -->
+<button class="btn-secondary-carbon h-[32px] px-3 rounded flex items-center gap-1.5 text-body-md font-body-md text-on-surface transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined text-[16px] text-tertiary">bolt</span>
+<span>Simulador PIX</span>
+</button>
+<!-- Primary Action: Novo Disparo -->
+<button class="btn-violet h-[32px] px-3.5 rounded flex items-center gap-1.5 text-body-md font-body-md font-medium transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined text-[16px]">send</span>
+<span>Novo Disparo</span>
+</button>
+<div class="h-4 w-[1px] bg-outline-variant/40 mx-1"></div>
+<!-- Trailing Utility Icons -->
+<div class="flex items-center gap-1">
+<button class="w-8 h-8 rounded flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all relative">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary ring-2 ring-surface"></span>
+</button>
+<button class="w-8 h-8 rounded flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined text-[20px]">bolt</span>
+</button>
+<button class="w-8 h-8 rounded-full border border-outline-variant/40 flex items-center justify-center text-on-surface-variant hover:border-primary transition-all ml-1 overflow-hidden" title="Avatar de usuário JP">
+<span class="material-symbols-outlined text-[22px]">account_circle</span>
+</button>
+</div>
+</div>
+</div>
+</header>
+<!-- MAIN VIEW CANVAS (Shifted by 64px top and 256px left) -->
+<main class="ml-64 mt-16 flex-1 min-h-[calc(100vh-64px)] p-6 pb-24 overflow-x-hidden">
+<div class="max-w-[1440px] mx-auto flex flex-col gap-6">
+<!-- Breadcrumbs & Context Header -->
+<section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2 text-outline text-[12px] font-label-code">
+<span>Puma Bot</span>
+<span>/</span>
+<span class="text-on-surface-variant font-medium">Recuperação &amp; Clientes</span>
+<span>/</span>
+<span class="text-primary font-medium">Pendências &amp; Membros VIP</span>
+</div>
+<div class="flex items-center gap-3 mt-1">
+<h1 class="text-headline-lg font-headline-lg text-on-surface font-semibold tracking-tight">
+              Pendências, Leads &amp; Membros VIP
+            </h1>
+<span class="px-2 py-0.5 rounded font-label-code text-[11px] font-semibold bg-tertiary-container/30 border border-tertiary-fixed-dim/40 text-tertiary-fixed flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
+              32 PENDÊNCIAS HOJE
+            </span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant max-w-3xl">
+            Monitore pagamentos em tempo real, recupere carrinhos abandonados e controle o ciclo de vida dos assinantes dos canais VIP conectados.
+          </p>
+</div>
+<!-- Header Primary Action Buttons -->
+<div class="flex items-center gap-2 self-start md:self-center">
+<button class="btn-secondary-carbon h-[34px] px-3.5 rounded flex items-center gap-2 text-body-md font-body-md hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined text-[17px] text-outline">file_download</span>
+<span>Exportar CSV</span>
+</button>
+<button class="btn-violet h-[34px] px-4 rounded flex items-center gap-2 text-body-md font-body-md font-medium transition-all shadow-sm">
+<span class="material-symbols-outlined text-[18px]">campaign</span>
+<span>Disparo de Cobrança em Massa</span>
+</button>
+</div>
+</section>
+<!-- METRIC TELEMETRY CARDS (Bento / 3-Up Spec) -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- Card 1: Valor Pendente -->
+<div class="tech-border-interactive rounded-xl bg-surface p-4 flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex flex-col gap-0.5">
+<span class="text-body-sm font-body-sm text-outline font-medium">Valor Pendente a Recuperar</span>
+<span class="text-[26px] font-label-tabular font-bold text-on-surface tracking-tight mt-1">
+                R$ 3.840,00
+              </span>
+</div>
+<div class="w-8 h-8 rounded-lg bg-tertiary-container/20 border border-tertiary-fixed/30 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[19px]">hourglass_top</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-3 mt-2 border-t border-outline-variant/20">
+<div class="flex items-center gap-1.5 text-body-sm font-body-sm text-on-surface-variant">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="font-label-code text-[12px]">68 PIX gerados</span>
+<span class="text-outline">não pagos</span>
+</div>
+<span class="font-label-code text-[11px] text-tertiary font-medium">Ticket méd. R$ 56,47</span>
+</div>
+</div>
+<!-- Card 2: Taxa de Recuperação -->
+<div class="tech-border-interactive rounded-xl bg-surface p-4 flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex flex-col gap-0.5">
+<span class="text-body-sm font-body-sm text-outline font-medium">Taxa de Recuperação do Bot</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="text-[26px] font-label-tabular font-bold text-secondary tracking-tight">
+                  42.6%
+                </span>
+<span class="font-label-code text-[12px] text-secondary flex items-center">
+<span class="material-symbols-outlined text-[14px]">arrow_upward</span> +3.8%
+                </span>
+</div>
+</div>
+<div class="w-8 h-8 rounded-lg bg-secondary-container/20 border border-secondary/30 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[19px]">trending_up</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-3 mt-2 border-t border-outline-variant/20">
+<div class="flex items-center gap-1.5 text-body-sm font-body-sm text-on-surface-variant">
+<span class="font-label-code text-[12px] text-on-surface font-medium">+R$ 2.410,00</span>
+<span class="text-outline">recuperados (24h)</span>
+</div>
+<span class="font-label-code text-[11px] px-1.5 py-0.5 rounded bg-surface-container-high border border-outline-variant/30 text-outline">Funil 5 min</span>
+</div>
+</div>
+<!-- Card 3: Assinantes VIP Ativos -->
+<div class="tech-border-interactive rounded-xl bg-surface p-4 flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex flex-col gap-0.5">
+<span class="text-body-sm font-body-sm text-outline font-medium">Assinantes VIP Ativos</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="text-[26px] font-label-tabular font-bold text-on-surface tracking-tight">
+                  4.821
+                </span>
+<span class="font-label-code text-[12px] text-primary flex items-center">
+<span class="material-symbols-outlined text-[14px]">verified</span> 99.4% retido
+                </span>
+</div>
+</div>
+<div class="w-8 h-8 rounded-lg bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[19px]">group</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-3 mt-2 border-t border-outline-variant/20">
+<div class="flex items-center gap-1.5 text-body-sm font-body-sm text-on-surface-variant">
+<span class="w-2 h-2 rounded-full bg-secondary-fixed"></span>
+<span class="font-label-code text-[12px]">8 canais monitorados</span>
+</div>
+<span class="font-label-code text-[11px] text-outline">Kick automático: Ativo</span>
+</div>
+</div>
+</section>
+<!-- ADVANCED FILTER & SEGMENTATION ROW -->
+<section class="tech-border rounded-xl bg-surface p-3 flex flex-col md:flex-row items-center justify-between gap-3">
+<!-- Segmented Tab Pills -->
+<div class="flex items-center gap-1 overflow-x-auto w-full md:w-auto p-1 bg-surface-container-lowest rounded-lg border border-outline-variant/30">
+<button class="px-3 py-1.5 rounded-md font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-all whitespace-nowrap">
+            Todos <span class="font-label-code text-[11px] text-outline ml-1">(184)</span>
+</button>
+<button class="px-3 py-1.5 rounded-md font-body-md text-body-md bg-surface-container-high text-primary border border-primary/30 font-medium transition-all whitespace-nowrap shadow-sm">
+            PIX Pendente <span class="font-label-code text-[11px] bg-tertiary/20 text-tertiary px-1 rounded ml-1 font-bold">32</span>
+</button>
+<button class="px-3 py-1.5 rounded-md font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-all whitespace-nowrap">
+            PIX Aprovado <span class="font-label-code text-[11px] text-outline ml-1">(142)</span>
+</button>
+<button class="px-3 py-1.5 rounded-md font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-all whitespace-nowrap">
+            PIX Expirado <span class="font-label-code text-[11px] text-outline ml-1">(10)</span>
+</button>
+<button class="px-3 py-1.5 rounded-md font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-all whitespace-nowrap">
+            VIP Vencendo em 24h <span class="font-label-code text-[11px] text-tertiary ml-1">(8)</span>
+</button>
+</div>
+<!-- Filter Quick Tools -->
+<div class="flex items-center gap-2 w-full md:w-auto justify-end">
+<div class="relative flex-1 md:w-60">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-outline text-[16px]">filter_list</span>
+<input class="w-full h-[32px] pl-8 pr-3 rounded bg-surface-container-lowest border border-outline-variant/30 text-body-sm font-body-sm text-on-surface placeholder:text-outline focus:border-primary-container outline-none" placeholder="Filtrar por ID ou @username..." type="text"/>
+</div>
+<button class="btn-secondary-carbon h-[32px] px-2.5 rounded flex items-center gap-1.5 text-body-sm font-body-sm text-outline hover:text-on-surface" title="Recarregar Grid">
+<span class="material-symbols-outlined text-[16px]">refresh</span>
+</button>
+<button class="btn-secondary-carbon h-[32px] px-2.5 rounded flex items-center gap-1.5 text-body-sm font-body-sm text-outline hover:text-on-surface" title="Colunas">
+<span class="material-symbols-outlined text-[16px]">view_column</span>
+</button>
+</div>
+</section>
+<!-- HIGH-DENSITY LINEAR/STRIPE TELEMETRY TABLE -->
+<section class="tech-border rounded-xl bg-surface overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<!-- Table Header -->
+<thead>
+<tr class="h-9 bg-surface-container-lowest border-b border-outline-variant/30 text-outline font-label-badge text-[11px] uppercase tracking-wider">
+<th class="w-10 px-4 text-center">
+<input class="rounded bg-surface-container border-outline-variant/50 text-primary-container focus:ring-0 w-3.5 h-3.5 cursor-pointer" type="checkbox"/>
+</th>
+<th class="px-4 py-2 font-semibold">CLIENTE / TELEGRAM</th>
+<th class="px-4 py-2 font-semibold">ROBÔ / FUNIL</th>
+<th class="px-4 py-2 font-semibold">PLANO</th>
+<th class="px-4 py-2 font-semibold text-right">VALOR</th>
+<th class="px-4 py-2 font-semibold text-center">STATUS PIX</th>
+<th class="px-4 py-2 font-semibold">TEMPO RESTANTE / DATA</th>
+<th class="px-4 py-2 font-semibold text-right">AÇÕES IMEDIATAS</th>
+</tr>
+</thead>
+<!-- Table Body Rows -->
+<tbody class="divide-y divide-outline-variant/15 text-body-md font-body-md">
+<!-- ROW 1: @marcos_trader (Approved) -->
+<tr class="hover:bg-surface-container-low transition-colors duration-100 group">
+<td class="px-4 py-3 text-center">
+<input class="rounded bg-surface-container border-outline-variant/50 text-primary-container focus:ring-0 w-3.5 h-3.5 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-3">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-surface-container-highest flex items-center justify-center font-label-code text-[11px] text-secondary font-medium border border-outline-variant/20">
+                      MT
+                    </div>
+<div class="flex flex-col">
+<span class="font-medium text-on-surface hover:text-primary transition-colors cursor-pointer flex items-center gap-1">
+                        @marcos_trader
+                        <span class="material-symbols-outlined text-[13px] text-secondary">verified</span>
+</span>
+<span class="font-label-code text-[11px] text-outline">ID: 98124401</span>
+</div>
+</div>
+</td>
+<td class="px-4 py-3">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-primary">smart_toy</span>
+<span class="text-on-surface font-medium">VIP Cripto Bot</span>
+</div>
+<span class="text-[11px] font-label-code text-outline">Funil Instantâneo</span>
+</td>
+<td class="px-4 py-3">
+<span class="px-2 py-0.5 rounded text-[11px] font-label-code bg-surface-container-high border border-outline-variant/30 text-on-surface">
+                    Vitalício
+                  </span>
+</td>
+<td class="px-4 py-3 text-right">
+<span class="font-label-tabular text-on-surface font-semibold">R$ 97,00</span>
+<div class="text-[10px] font-label-code text-outline">Efí Pay Gateway</div>
+</td>
+<td class="px-4 py-3 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-label-code font-medium bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    Aprovado
+                  </span>
+</td>
+<td class="px-4 py-3">
+<div class="flex flex-col">
+<span class="font-label-code text-[12px] text-emerald-400 font-medium">Pago há 42s</span>
+<span class="font-label-code text-[10px] text-outline">18:42:10 • Hoje</span>
+</div>
+</td>
+<td class="px-4 py-3 text-right">
+<div class="inline-flex items-center gap-1.5">
+<button class="btn-secondary-carbon h-[26px] px-2 rounded text-[11px] font-label-code flex items-center gap-1 hover:text-on-surface">
+<span class="material-symbols-outlined text-[13px]">receipt</span>
+<span>Ver Comprovante</span>
+</button>
+<button class="h-[26px] px-2 rounded text-[11px] font-label-code bg-surface-container-high hover:bg-surface-variant text-primary border border-outline-variant/30 flex items-center gap-1 transition-all">
+<span class="material-symbols-outlined text-[13px]">group_add</span>
+<span>Acessar Canal VIP</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 2: @alessandra_crypto (Pending 04:12) -->
+<tr class="hover:bg-surface-container-low transition-colors duration-100 group bg-surface-container-lowest/30">
+<td class="px-4 py-3 text-center">
+<input checked="" class="rounded bg-surface-container border-outline-variant/50 text-primary-container focus:ring-0 w-3.5 h-3.5 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-3">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-tertiary-container/30 flex items-center justify-center font-label-code text-[11px] text-tertiary font-medium border border-tertiary/20">
+                      AC
+                    </div>
+<div class="flex flex-col">
+<span class="font-medium text-on-surface hover:text-primary transition-colors cursor-pointer">
+                        @alessandra_crypto
+                      </span>
+<span class="font-label-code text-[11px] text-outline">ID: 55412998</span>
+</div>
+</div>
+</td>
+<td class="px-4 py-3">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-primary">smart_toy</span>
+<span class="text-on-surface font-medium">VIP Cripto Bot</span>
+</div>
+<span class="text-[11px] font-label-code text-tertiary">Recuperação Automática 1/3</span>
+</td>
+<td class="px-4 py-3">
+<span class="px-2 py-0.5 rounded text-[11px] font-label-code bg-surface-container-high border border-outline-variant/30 text-on-surface">
+                    Mensal
+                  </span>
+</td>
+<td class="px-4 py-3 text-right">
+<span class="font-label-tabular text-on-surface font-semibold">R$ 47,00</span>
+<div class="text-[10px] font-label-code text-outline">Mercado Pago</div>
+</td>
+<td class="px-4 py-3 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-label-code font-semibold bg-amber-500/10 border border-amber-500/25 text-amber-400">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+                    Pendente (04:12)
+                  </span>
+</td>
+<td class="px-4 py-3">
+<div class="flex flex-col">
+<span class="font-label-code text-[12px] text-amber-400 font-medium">Gerado há 5m</span>
+<span class="font-label-code text-[10px] text-outline">Expira em 04m 12s</span>
+</div>
+</td>
+<td class="px-4 py-3 text-right">
+<div class="inline-flex items-center gap-1.5">
+<button class="btn-violet h-[26px] px-2.5 rounded text-[11px] font-label-code flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">send</span>
+<span>Enviar Cobrança Telegram</span>
+</button>
+<button class="btn-secondary-carbon h-[26px] px-2 rounded text-[11px] font-label-code flex items-center gap-1" title="Copiar PIX Copia e Cola">
+<span class="material-symbols-outlined text-[13px]">content_copy</span>
+<span>Copiar Link PIX</span>
+</button>
+<button class="h-[26px] px-2 rounded text-[11px] font-label-code bg-surface-container-high hover:bg-emerald-950/40 text-emerald-400 border border-emerald-500/30 flex items-center gap-1 transition-all">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+<span>Liberar Manual</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 3: @felipe_investe (Pending 08:45) -->
+<tr class="hover:bg-surface-container-low transition-colors duration-100 group bg-surface-container-lowest/30">
+<td class="px-4 py-3 text-center">
+<input checked="" class="rounded bg-surface-container border-outline-variant/50 text-primary-container focus:ring-0 w-3.5 h-3.5 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-3">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-surface-container-highest flex items-center justify-center font-label-code text-[11px] text-on-surface font-medium border border-outline-variant/20">
+                      FI
+                    </div>
+<div class="flex flex-col">
+<span class="font-medium text-on-surface hover:text-primary transition-colors cursor-pointer">
+                        @felipe_investe
+                      </span>
+<span class="font-label-code text-[11px] text-outline">ID: 77210984</span>
+</div>
+</div>
+</td>
+<td class="px-4 py-3">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-primary">diamond</span>
+<span class="text-on-surface font-medium">Mentoria Black</span>
+</div>
+<span class="text-[11px] font-label-code text-outline">Disparo Manual Pendente</span>
+</td>
+<td class="px-4 py-3">
+<span class="px-2 py-0.5 rounded text-[11px] font-label-code bg-primary-container/20 border border-primary/30 text-primary">
+                    Anual VIP
+                  </span>
+</td>
+<td class="px-4 py-3 text-right">
+<span class="font-label-tabular text-on-surface font-semibold">R$ 297,00</span>
+<div class="text-[10px] font-label-code text-outline">PushinPay Direct</div>
+</td>
+<td class="px-4 py-3 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-label-code font-semibold bg-amber-500/10 border border-amber-500/25 text-amber-400">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                    Pendente (08:45)
+                  </span>
+</td>
+<td class="px-4 py-3">
+<div class="flex flex-col">
+<span class="font-label-code text-[12px] text-amber-400 font-medium">Gerado há 1m</span>
+<span class="font-label-code text-[10px] text-outline">Expira em 08m 45s</span>
+</div>
+</td>
+<td class="px-4 py-3 text-right">
+<div class="inline-flex items-center gap-1.5">
+<button class="btn-violet h-[26px] px-2.5 rounded text-[11px] font-label-code flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">send</span>
+<span>Enviar Cobrança Telegram</span>
+</button>
+<button class="h-[26px] px-2 rounded text-[11px] font-label-code bg-surface-container-high hover:bg-emerald-950/40 text-emerald-400 border border-emerald-500/30 flex items-center gap-1 transition-all">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+<span>Liberar Manual</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 4: @lucas_scalper (Expired) -->
+<tr class="hover:bg-surface-container-low transition-colors duration-100 group">
+<td class="px-4 py-3 text-center">
+<input class="rounded bg-surface-container border-outline-variant/50 text-primary-container focus:ring-0 w-3.5 h-3.5 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-3">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-error-container/20 flex items-center justify-center font-label-code text-[11px] text-error font-medium border border-error/20">
+                      LS
+                    </div>
+<div class="flex flex-col">
+<span class="font-medium text-on-surface hover:text-primary transition-colors cursor-pointer">
+                        @lucas_scalper
+                      </span>
+<span class="font-label-code text-[11px] text-outline">ID: 11048821</span>
+</div>
+</div>
+</td>
+<td class="px-4 py-3">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-primary">bolt</span>
+<span class="text-on-surface font-medium">Puma Ofertas Pro</span>
+</div>
+<span class="text-[11px] font-label-code text-outline">Lead Abandonado</span>
+</td>
+<td class="px-4 py-3">
+<span class="px-2 py-0.5 rounded text-[11px] font-label-code bg-surface-container-high border border-outline-variant/30 text-on-surface">
+                    Trimestral
+                  </span>
+</td>
+<td class="px-4 py-3 text-right">
+<span class="font-label-tabular text-on-surface font-semibold">R$ 89,90</span>
+<div class="text-[10px] font-label-code text-outline">Efí Pay</div>
+</td>
+<td class="px-4 py-3 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-label-code font-medium bg-red-500/10 border border-red-500/25 text-red-400">
+<span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                    Expirado
+                  </span>
+</td>
+<td class="px-4 py-3">
+<div class="flex flex-col">
+<span class="font-label-code text-[12px] text-red-400 font-medium">Expirou há 12m</span>
+<span class="font-label-code text-[10px] text-outline">Código cancelado</span>
+</div>
+</td>
+<td class="px-4 py-3 text-right">
+<div class="inline-flex items-center gap-1.5">
+<button class="h-[26px] px-2.5 rounded text-[11px] font-label-code bg-surface-container-high hover:bg-surface-variant text-tertiary-fixed border border-tertiary/30 flex items-center gap-1 transition-all">
+<span class="material-symbols-outlined text-[13px]">local_offer</span>
+<span>Reativar Oferta (-10%)</span>
+</button>
+<button class="btn-secondary-carbon h-[26px] px-1.5 rounded text-outline hover:text-on-surface" title="Mais Opções">
+<span class="material-symbols-outlined text-[14px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 5: @beatriz_fx (Approved, Renewal Soon) -->
+<tr class="hover:bg-surface-container-low transition-colors duration-100 group">
+<td class="px-4 py-3 text-center">
+<input class="rounded bg-surface-container border-outline-variant/50 text-primary-container focus:ring-0 w-3.5 h-3.5 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-3">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-surface-container-highest flex items-center justify-center font-label-code text-[11px] text-on-surface font-medium border border-outline-variant/20">
+                      BF
+                    </div>
+<div class="flex flex-col">
+<span class="font-medium text-on-surface hover:text-primary transition-colors cursor-pointer">
+                        @beatriz_fx
+                      </span>
+<span class="font-label-code text-[11px] text-outline">ID: 66329011</span>
+</div>
+</div>
+</td>
+<td class="px-4 py-3">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-primary">show_chart</span>
+<span class="text-on-surface font-medium">Sinais Forex Gold</span>
+</div>
+<span class="text-[11px] font-label-code text-outline">Membro VIP Ativo</span>
+</td>
+<td class="px-4 py-3">
+<span class="px-2 py-0.5 rounded text-[11px] font-label-code bg-surface-container-high border border-outline-variant/30 text-on-surface">
+                    Mensal
+                  </span>
+</td>
+<td class="px-4 py-3 text-right">
+<span class="font-label-tabular text-on-surface font-semibold">R$ 47,00</span>
+<div class="text-[10px] font-label-code text-outline">Mercado Pago</div>
+</td>
+<td class="px-4 py-3 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-label-code font-medium bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    Aprovado
+                  </span>
+</td>
+<td class="px-4 py-3">
+<div class="flex flex-col">
+<span class="font-label-code text-[12px] text-tertiary font-medium">Renovação em 2 dias</span>
+<span class="font-label-code text-[10px] text-outline">Vence em 28/10</span>
+</div>
+</td>
+<td class="px-4 py-3 text-right">
+<div class="inline-flex items-center gap-1.5">
+<button class="btn-secondary-carbon h-[26px] px-2.5 rounded text-[11px] font-label-code flex items-center gap-1 hover:border-tertiary hover:text-tertiary">
+<span class="material-symbols-outlined text-[13px]">autorenew</span>
+<span>Gerar Renovação</span>
+</button>
+<button class="btn-secondary-carbon h-[26px] px-1.5 rounded text-outline hover:text-on-surface" title="Ver Histórico">
+<span class="material-symbols-outlined text-[14px]">history</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer / Telemetry Pagination Controls -->
+<div class="px-4 py-3 bg-surface-container-lowest border-t border-outline-variant/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-body-sm font-body-sm">
+<div class="flex items-center gap-2 text-outline font-label-code text-[11px]">
+<span>Exibindo 1–5 de 32 pendências prioritárias</span>
+<span>•</span>
+<span class="text-secondary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+              Webhook Real-Time Conectado
+            </span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-outline font-label-code text-[11px]">Linhas por página:</span>
+<select class="h-6 px-1.5 text-[11px] font-label-code bg-surface-container border border-outline-variant/30 text-on-surface rounded">
+<option>10</option>
+<option selected="">25</option>
+<option>50</option>
+<option>100</option>
+</select>
+<div class="flex items-center gap-1 ml-2">
+<button class="w-6 h-6 rounded flex items-center justify-center text-outline hover:bg-surface-container disabled:opacity-40" disabled="">
+<span class="material-symbols-outlined text-[15px]">chevron_left</span>
+</button>
+<span class="font-label-code text-[11px] px-2 text-on-surface">1 / 4</span>
+<button class="w-6 h-6 rounded flex items-center justify-center text-outline hover:bg-surface-container">
+<span class="material-symbols-outlined text-[15px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- LIVE WEBHOOK ENGINE & LOGS STRIP -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+<!-- Live Terminal Mini-Console -->
+<div class="lg:col-span-2 tech-border rounded-xl bg-surface p-4 flex flex-col justify-between">
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant/20">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary animate-pulse"></span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-medium">Log do Motor de Cobrança (Puma Engine v2.4)</span>
+</div>
+<span class="font-label-code text-[11px] text-outline">Latência: 18ms</span>
+</div>
+<div class="font-label-code text-[11px] text-on-surface-variant flex flex-col gap-1.5 py-3 font-mono">
+<div class="flex items-center gap-2">
+<span class="text-outline">[18:42:10.104]</span>
+<span class="text-emerald-400 font-bold">PIX_APPROVED</span>
+<span class="text-on-surface">TXID #ef991a02 -&gt; @marcos_trader liberado no Canal VIP Cripto (ID -1001948291).</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-outline">[18:41:45.892]</span>
+<span class="text-amber-400 font-bold">RECOVERY_TRIGGER</span>
+<span class="text-on-surface">Funil #2 enviado para @alessandra_crypto: "Restam 4 minutos para garantir seu bônus".</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-outline">[18:39:02.431]</span>
+<span class="text-primary font-bold">WEBHOOK_INCOMING</span>
+<span class="text-on-surface">PIX gerado R$ 297,00 (PushinPay) para @felipe_investe. Timer de 10m disparado.</span>
+</div>
+</div>
+<div class="pt-2 border-t border-outline-variant/20 flex items-center justify-between">
+<span class="text-[11px] text-outline font-label-code">Engine Status: Modo Agressivo Inteligente (Anti-Bloqueio Telegram Ativo)</span>
+<a class="text-[11px] text-primary hover:underline font-label-code flex items-center gap-1" href="#">
+              Ver Telemetria Completa <span class="material-symbols-outlined text-[13px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Quick Recovery Bot Trigger Card -->
+<div class="tech-border rounded-xl bg-surface p-4 flex flex-col justify-between">
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant/20">
+<span class="font-headline-sm text-headline-sm text-on-surface font-medium">Automação de Áudio VIP</span>
+<span class="material-symbols-outlined text-primary text-[18px]">record_voice_over</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant py-2">
+            Dispare uma mensagem de voz natural gravada para os clientes que abandonaram o checkout nas últimas 2 horas.
+          </p>
+<div class="p-2.5 rounded-lg bg-surface-container-low border border-outline-variant/30 flex items-center justify-between my-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">mic</span>
+<div class="flex flex-col">
+<span class="font-label-code text-[11px] text-on-surface font-medium">audio_recuperacao_v3.mp3</span>
+<span class="text-[10px] text-outline font-label-code">0:24 • Conversão média: 34%</span>
+</div>
+</div>
+<button class="w-6 h-6 rounded bg-surface-container-high flex items-center justify-center text-on-surface hover:text-primary">
+<span class="material-symbols-outlined text-[14px]">play_arrow</span>
+</button>
+</div>
+<button class="btn-violet h-[32px] w-full mt-2 rounded font-body-sm font-body-sm font-medium flex items-center justify-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">campaign</span>
+<span>Testar Disparo no Meu Telegram</span>
+</button>
+</div>
+</section>
+</div>
+</main>
+<!-- FLOATING QUICK CONTROL BAR (Sticky Actions for 32 Pending items) -->
+<div class="fixed bottom-4 left-64 right-4 z-30 pointer-events-none flex justify-center">
+<div class="pointer-events-auto tech-border rounded-xl bg-surface-container-high/95 backdrop-blur-md px-4 py-2.5 shadow-2xl flex items-center gap-4 max-w-4xl border border-primary/20">
+<div class="flex items-center gap-2 pr-3 border-r border-outline-variant/40">
+<span class="w-2 h-2 rounded-full bg-tertiary animate-ping"></span>
+<span class="font-label-code text-[12px] text-on-surface font-semibold">
+          32 Pendências Selecionadas
+        </span>
+<span class="text-outline text-[11px] font-label-code">(R$ 3.840,00)</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="btn-violet h-[30px] px-3 rounded text-[12px] font-body-md font-medium flex items-center gap-1.5 transition-all">
+<span class="material-symbols-outlined text-[15px]">record_voice_over</span>
+<span>Disparar Áudio de Remarketing</span>
+</button>
+<button class="btn-secondary-carbon h-[30px] px-3 rounded text-[12px] font-body-md text-tertiary-fixed border-tertiary-fixed/30 hover:border-tertiary-fixed flex items-center gap-1.5 transition-all">
+<span class="material-symbols-outlined text-[15px]">percent</span>
+<span>Enviar Desconto PIX Relâmpago (-15%)</span>
+</button>
+<button class="h-[30px] px-2.5 rounded text-[12px] font-label-code text-outline hover:text-on-surface hover:bg-surface-container transition-all" title="Fechar Ações em Lote">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+</div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1. Mapeamento de abas para URLs reais do sistema
+    const navMap = {
+      'tab-dashboard': '/dashboard',
+      'tab-robos': '/robos',
+      'tab-fluxos': '/fluxos',
+      'tab-pendencias': '/clientes',
+      'tab-gateways': '/gateways'
+    };
+
+    document.querySelectorAll('[data-nav]').forEach(btn => {
+      const targetKey = btn.getAttribute('data-nav');
+      const targetUrl = navMap[targetKey];
+      if (targetUrl) {
+        btn.style.cursor = 'pointer';
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          window.location.href = targetUrl;
+        });
+      }
+    });
+
+    // 2. Destacar item ativo de acordo com a rota atual
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('[data-nav]').forEach(btn => {
+      const targetKey = btn.getAttribute('data-nav');
+      const targetUrl = navMap[targetKey];
+      if (targetUrl === currentPath) {
+        btn.classList.add('bg-surface-container-high', 'text-primary', 'border-l-2', 'border-primary');
+        btn.classList.remove('text-on-surface-variant');
+        const icon = btn.querySelector('.material-symbols-outlined');
+        if (icon) icon.classList.add('text-primary');
+      } else {
+        btn.classList.remove('bg-surface-container-high', 'border-l-2', 'border-primary');
+      }
+    });
+
+    // 3. Suporte ao atalho ⌘B para colapsar/expandir a sidebar
+    const toggleBtn = document.getElementById('toggle-sidebar');
+    const sidebar = document.getElementById('main-sidebar');
+    const mainContent = document.querySelector('main');
+
+    function toggleSidebar() {
+      if (!sidebar) return;
+      if (sidebar.style.transform === 'translateX(-100%)') {
+        sidebar.style.transform = 'translateX(0)';
+        if (mainContent) mainContent.style.marginLeft = '16rem';
+      } else {
+        sidebar.style.transform = 'translateX(-100%)';
+        if (mainContent) mainContent.style.marginLeft = '0';
+      }
+    }
+
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', toggleSidebar);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        toggleSidebar();
+      }
+    });
+  });
+</script>
+
+
+<script>
+  (function() {
+    // Auth Guard: protege a rota caso não haja token
+    const token = localStorage.getItem('puma_token');
+    const userRaw = localStorage.getItem('puma_user');
+
+    if (!token && !window.location.search.includes('preview=1')) {
+      // Redireciona de forma segura para login
+      window.location.href = '/login?expired=1';
+      return;
+    }
+
+    if (userRaw) {
+      try {
+        const user = JSON.parse(userRaw);
+        document.addEventListener('DOMContentLoaded', () => {
+          // Atualizar nome do usuário e avatar na sidebar
+          const nameEl = document.querySelector('.font-headline-sm.text-body-sm.font-medium');
+          if (nameEl) nameEl.textContent = user.name || 'Operador Alpha';
+
+          const avatarEl = document.querySelector('.relative.w-7.h-7');
+          if (avatarEl && user.name) {
+            const initials = user.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+            avatarEl.childNodes[0].nodeValue = initials + ' ';
+          }
+        });
+      } catch (e) {}
+    }
+
+    // Adicionar botão de logout funcional no rodapé da sidebar
+    document.addEventListener('DOMContentLoaded', () => {
+      const footerNav = document.querySelector('#main-sidebar .border-t.border-outline-variant\\/30');
+      if (footerNav && !document.getElementById('logout-btn')) {
+        const logoutBtn = document.createElement('button');
+        logoutBtn.id = 'logout-btn';
+        logoutBtn.className = 'w-full flex items-center justify-between px-space-md py-space-sm rounded-lg text-error hover:bg-error/10 text-body-sm transition-colors mt-1';
+        logoutBtn.innerHTML = `
+          <div class="flex items-center gap-space-sm">
+            <span class="material-symbols-outlined text-error" data-icon="logout">logout</span>
+            <span>Sair da Conta</span>
+          </div>
+        `;
+        logoutBtn.addEventListener('click', () => {
+          localStorage.removeItem('puma_token');
+          localStorage.removeItem('puma_user');
+          window.location.href = '/login';
+        });
+        footerNav.appendChild(logoutBtn);
+      }
+    });
+  })();
+</script>
+
+</body></html>

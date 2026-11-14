@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Puma Bot — Gerenciamento de Bots</title>
+<!-- Google Fonts: Geist, Inter, JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+ tailwind.config = {
+ darkMode: "class",
+ theme: {
+ extend: {
+ "colors": {
+ "primary-fixed-dim": "#d2bbff",
+ "inverse-surface": "#e5e1e4",
+ "outline-variant": "#4a4455",
+ "surface-container": "#201f22",
+ "on-background": "#e5e1e4",
+ "surface-container-highest": "#353437",
+ "tertiary-container": "#905b00",
+ "primary-fixed": "#eaddff",
+ "on-surface-variant": "#ccc3d8",
+ "surface-tint": "#d2bbff",
+ "secondary-fixed": "#6ffbbe",
+ "on-error": "#690005",
+ "secondary-fixed-dim": "#4edea3",
+ "on-tertiary-container": "#ffe1c0",
+ "surface-bright": "#39393b",
+ "secondary-container": "#00a572",
+ "on-tertiary-fixed": "#2a1700",
+ "on-secondary-fixed": "#002113",
+ "tertiary-fixed": "#ffddb8",
+ "outline": "#958da1",
+ "surface-container-low": "#1c1b1d",
+ "secondary": "#4edea3",
+ "on-tertiary-fixed-variant": "#653e00",
+ "background": "#131315",
+ "surface-container-lowest": "#0e0e10",
+ "on-secondary": "#003824",
+ "surface-variant": "#353437",
+ "on-error-container": "#ffdad6",
+ "surface": "#131315",
+ "on-primary-fixed-variant": "#5a00c6",
+ "primary": "#d2bbff",
+ "surface-dim": "#131315",
+ "error-container": "#93000a",
+ "on-secondary-container": "#00311f",
+ "tertiary-fixed-dim": "#ffb95f",
+ "on-primary": "#3f008e",
+ "error": "#ffb4ab",
+ "surface-container-high": "#2a2a2c",
+ "on-primary-fixed": "#25005a",
+ "on-surface": "#e5e1e4",
+ "tertiary": "#ffb95f",
+ "primary-container": "#7c3aed",
+ "on-secondary-fixed-variant": "#005236",
+ "on-tertiary": "#472a00",
+ "inverse-primary": "#732ee4",
+ "on-primary-container": "#ede0ff",
+ "inverse-on-surface": "#313032"
+ },
+ "borderRadius": {
+ "DEFAULT": "0.125rem",
+ "lg": "0.25rem",
+ "xl": "0.5rem",
+ "full": "0.75rem"
+ },
+ "spacing": {
+ "space-md": "0.75rem",
+ "space-2xs": "0.125rem",
+ "gutter-desktop": "1.25rem",
+ "space-sm": "0.5rem",
+ "margin": "1rem",
+ "space-lg": "1rem",
+ "space-xl": "1.5rem",
+ "space-xs": "0.25rem",
+ "gutter": "1rem",
+ "margin-desktop": "2rem"
+ },
+ "fontFamily": {
+ "label-tabular": ["JetBrains Mono"],
+ "headline-xl-mobile": ["Geist"],
+ "headline-sm": ["Geist"],
+ "label-code": ["JetBrains Mono"],
+ "body-md": ["Inter"],
+ "headline-md": ["Geist"],
+ "headline-xl": ["Geist"],
+ "headline-lg": ["Geist"],
+ "body-lg": ["Inter"],
+ "label-badge": ["Inter"],
+ "body-sm": ["Inter"]
+ },
+ "fontSize": {
+ "label-tabular": ["13px", { "lineHeight": "18px", "fontWeight": "500" }],
+ "headline-xl-mobile": ["24px", { "lineHeight": "30px", "fontWeight": "600" }],
+ "headline-sm": ["15px", { "lineHeight": "20px", "fontWeight": "500" }],
+ "label-code": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+ "body-md": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+ "headline-md": ["18px", { "lineHeight": "24px", "fontWeight": "500" }],
+ "headline-xl": ["32px", { "lineHeight": "38px", "fontWeight": "600" }],
+ "headline-lg": ["24px", { "lineHeight": "30px", "fontWeight": "600" }],
+ "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }],
+ "label-badge": ["11px", { "lineHeight": "14px", "fontWeight": "600" }],
+ "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }]
+ }
+ }
+ }
+ }
+ </script>
+<style>
+ /* Mechanical chiseled rim light & micro-borders */
+ .rim-card {
+ background: #111113;
+ border: 1px solid #222226;
+ box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.07);
+ }
+ .rim-card:hover {
+ border-color: #2E2E34;
+ box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+ }
+ .rim-primary-btn {
+ background: #7C3AED;
+ border: 1px solid #8B5CF6;
+ box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.20);
+ }
+ .rim-primary-btn:hover {
+ background: #8B5CF6;
+ }
+ .rim-primary-btn:active {
+ background: #6D28D9;
+ transform: scale(0.98);
+ }
+ .rim-secondary-btn {
+ background: #18181B;
+ border: 1px solid #222226;
+ box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.07);
+ }
+ .rim-secondary-btn:hover {
+ background: #222226;
+ border-color: #2E2E34;
+ }
+ /* Custom scrollbar for high density telemetry */
+ ::-webkit-scrollbar {
+ width: 5px;
+ height: 5px;
+ }
+ ::-webkit-scrollbar-track {
+ background: #09090B;
+ }
+ ::-webkit-scrollbar-thumb {
+ background: #222226;
+ border-radius: 2px;
+ }
+ ::-webkit-scrollbar-thumb:hover {
+ background: #353437;
+ }
+ </style>
+</head>
+<body class="bg-background text-on-surface antialiased font-body-md overflow-x-hidden min-h-screen selection:bg-primary-container selection:text-white">
+<!-- ================= APP SHELL: SIDEBAR ================= -->
+<aside class="fixed top-0 left-0 h-screen w-64 flex flex-col z-40 bg-surface dark:bg-surface border-r border-outline-variant/30 shadow-none">
+<!-- Sidebar Header: Brand & Puma Identity -->
+<div class="p-space-md border-b border-outline-variant/30">
+<div class="flex items-center gap-space-sm">
+<div class="relative w-9 h-9 rounded-xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center overflow-hidden flex-shrink-0">
+<img alt="Puma Bot Avatar Pro" class="w-full h-full object-cover" data-alt="Modern technical geometric panther logo head rendered in sleek violet and deep obsidian tones on pure black background with sharp neon edges in high craft minimalist digital design system style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhCXrLHL6KpQg9AUABpW1PMXm2j2UsFJw16jq0KFVGKfOXJU4donK4sgLeKz44l-WyGkhhnDIhfZeW6odnL3WML70CRxBo54oT-zy2sJnrXs5jyL4BAx86nhSkP73VZAp9aobiNFKho5yFEu4-TcBIb86IinuoD2Oc4JwdhvuuS2qzAZM55LS-N_mkVfHAE0BieM0G7q18rBfEqGRkyJQogrZ8cGQVxNrBaJJNTDZo"/>
+<span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-secondary ring-2 ring-surface"></span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-headline-md font-headline-md text-on-surface dark:text-on-surface tracking-tight font-semibold truncate leading-none">Puma Bot</span>
+<span class="text-label-code font-label-code text-secondary tracking-tight mt-1 truncate">v2.4 PRO • Online</span>
+</div>
+</div>
+<!-- Quick Action CTA inside Sidebar -->
+<button class="mt-space-md w-full h-8 px-space-md rounded-lg rim-primary-btn text-white text-body-sm font-body-sm flex items-center justify-center gap-space-xs transition-all duration-150 active:scale-[0.99]">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span>Conectar Bot</span>
+</button>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 p-space-md space-y-1 overflow-y-auto">
+<!-- Dashboard (Inactive) -->
+<a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:bg-surface-container dark:hover:bg-surface-container transition-colors duration-150 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined text-[18px]">dashboard</span>
+<span class="text-body-sm font-body-sm">Dashboard</span>
+</a>
+<!-- Meus Robôs (ACTIVE MATCH - Tela 2) -->
+<a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg bg-surface-container-high dark:bg-surface-container-high text-primary dark:text-primary border-l-2 border-primary transition-all duration-150 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+<span class="text-body-sm font-body-sm font-medium">Meus Robôs</span>
+<span class="ml-auto px-1.5 py-0.5 rounded text-[10px] font-label-code font-semibold bg-primary-container/20 text-primary-fixed border border-primary/30">4</span>
+</a>
+<!-- Meus Fluxos (Inactive) -->
+<a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:bg-surface-container dark:hover:bg-surface-container transition-colors duration-150 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined text-[18px]">account_tree</span>
+<span class="text-body-sm font-body-sm">Meus Fluxos</span>
+</a>
+<!-- Gateways (Inactive) -->
+<a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:bg-surface-container dark:hover:bg-surface-container transition-colors duration-150 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined text-[18px]">payments</span>
+<span class="text-body-sm font-body-sm">Gateways</span>
+</a>
+<!-- Pendências & Clientes (Inactive) -->
+<a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:bg-surface-container dark:hover:bg-surface-container transition-colors duration-150 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+<span class="text-body-sm font-body-sm">Pendências &amp; Clientes</span>
+</a>
+</nav>
+<!-- Sidebar Footer -->
+<div class="p-space-md border-t border-outline-variant/30 space-y-1">
+<a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+<span class="text-body-sm font-body-sm">Configurações</span>
+</a>
+<button class="w-full flex items-center justify-between px-space-md py-space-sm rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors duration-150 text-left">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-[18px]">keyboard_command_key</span>
+<span class="text-body-sm font-body-sm">Colapsar (⌘B)</span>
+</div>
+<kbd class="text-[10px] font-label-code px-1 rounded bg-surface-container-high border border-outline-variant/40 text-outline">ESC</kbd>
+</button>
+</div>
+</aside>
+<!-- ================= APP SHELL: TOP NAV BAR ================= -->
+<header class="fixed top-0 left-64 right-0 h-16 z-30 flex items-center bg-surface dark:bg-surface border-b border-outline-variant/30 shadow-none px-gutter-desktop justify-between">
+<!-- Left Section: Search Input + System Status -->
+<div class="flex items-center gap-space-md w-1/3 min-w-[280px]">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-outline text-[16px] pointer-events-none">search</span>
+<input class="w-full h-[34px] pl-8 pr-12 rounded-lg bg-surface-container-lowest border border-outline-variant/40 text-on-surface placeholder:text-outline text-body-sm focus:outline-none focus:border-primary-container transition-all" placeholder="Buscar robôs por @username, tag ou token..." type="text"/>
+<kbd class="absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded text-[10px] font-label-code text-outline bg-surface-container-high border border-outline-variant/40">⌘K</kbd>
+</div>
+</div>
+<!-- Center Section: Real-time Monthly Goal Tracker (R$ 42.850 / 100k) -->
+<div class="hidden xl:flex items-center gap-space-md px-space-md py-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant/20">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+<span class="text-body-sm text-outline font-medium">Meta Mensal:</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-label-tabular font-label-tabular text-on-surface font-semibold">R$ 42.850,00</span>
+<span class="text-label-code font-label-code text-outline">/ 100k</span>
+</div>
+<!-- Micro Progress Bar -->
+<div class="w-24 h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary-container to-secondary rounded-full" style="width: 42.85%"></div>
+</div>
+<span class="text-[11px] font-label-code text-secondary font-medium">42.8%</span>
+</div>
+<!-- Right Trailing Actions & User Greeting -->
+<div class="flex items-center gap-space-sm">
+<!-- Greeting -->
+<div class="hidden lg:flex flex-col text-right mr-2">
+<span class="text-body-sm text-outline">Bom dia,</span>
+<span class="text-headline-sm font-headline-sm text-on-surface font-semibold leading-tight">jeeh</span>
+</div>
+<!-- Quick PIX Simulator Button -->
+<button class="h-[32px] px-space-md rounded-lg rim-secondary-btn text-on-surface text-body-sm font-body-sm flex items-center gap-space-xs transition-colors duration-150">
+<span class="material-symbols-outlined text-[16px] text-tertiary">bolt</span>
+<span>Simulador PIX</span>
+</button>
+<!-- Action Primary: Novo Disparo -->
+<button class="h-[32px] px-space-md rounded-lg rim-primary-btn text-white text-body-sm font-body-sm flex items-center gap-space-xs transition-all duration-150">
+<span class="material-symbols-outlined text-[16px]">send</span>
+<span>Novo Disparo</span>
+</button>
+<!-- Notification Action -->
+<button class="relative w-8 h-8 rounded-lg rim-secondary-btn flex items-center justify-center text-outline hover:text-on-surface transition-colors" title="Notificações">
+<span class="material-symbols-outlined text-[18px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+</button>
+<!-- User Profile Avatar -->
+<div class="flex items-center pl-1">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high border border-outline-variant/40 flex items-center justify-center overflow-hidden cursor-pointer hover:border-primary transition-colors">
+<img alt="Avatar de usuário JP" class="w-full h-full object-cover" data-alt="Digital profile photograph of a young tech product engineer wearing modern dark streetwear in a moody minimal ambient studio with subtle violet rim light reflections." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDyhlCVPELP9GNmCOjbXiRz9EpQIz5cDEznrb2AwMQULNum7RIyf2wevkyegCNI-7nSiift6ChrIOxSK5CHj7_aFyNf4_y0EsYv61shcwncUDDZNK3nZ0eoSNDcMRSnredyg-TWn5Jvf3dF-O18HXlf2TI3rUzYyr0QbBlSZnkjBZW2iEIMG--2CCh6YEx3hO_TDh2WqLU31MGR_7Gh6Uhf9SVzyPMmhG4ns6avNSat"/>
+</div>
+</div>
+</div>
+</header>
+<!-- ================= MAIN CONTENT CANVAS ================= -->
+<main class="ml-64 pt-16 min-h-screen bg-surface-container-lowest p-margin-desktop">
+<div class="max-w-[1440px] mx-auto space-y-space-xl">
+<!-- ================= PAGE TITLE & TOP ACTIONS ================= -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md pb-2">
+<div class="space-y-1">
+<div class="flex items-center gap-space-sm">
+<h1 class="text-headline-lg font-headline-lg text-on-surface font-semibold tracking-tight">Robôs Ativos no Telegram</h1>
+<!-- Counter Badge -->
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-secondary/10 border border-secondary/25">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-ping"></span>
+<span class="text-label-badge font-label-badge text-secondary font-semibold uppercase tracking-wider">4 ROBÔS ONLINE</span>
+</div>
+</div>
+<p class="text-body-md font-body-md text-outline">Gerencie tokens, status de conexão webhook e canais VIP sincronizados</p>
+</div>
+<!-- Global Action Group -->
+<div class="flex items-center gap-space-sm flex-wrap">
+<button class="h-[34px] px-space-md rounded-lg rim-secondary-btn text-on-surface-variant hover:text-on-surface text-body-sm font-body-sm flex items-center gap-space-xs transition-colors">
+<span class="material-symbols-outlined text-[16px]">restart_alt</span>
+<span>Reiniciar Todos</span>
+</button>
+<button class="h-[34px] px-space-md rounded-lg rim-primary-btn text-white text-body-sm font-medium flex items-center gap-space-xs transition-all" id="btnOpenConnectModal">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span>+ Conectar Novo Bot</span>
+</button>
+</div>
+</div>
+<!-- ================= SEARCH & STATUS FILTER STRIP ================= -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-space-sm p-1.5 rounded-xl bg-surface-container-low border border-outline-variant/30">
+<!-- Filter Tabs -->
+<div class="flex items-center gap-1 w-full sm:w-auto overflow-x-auto">
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-high text-on-surface text-body-sm font-medium border border-outline-variant/40 shadow-sm">
+ Todos (4)
+ </button>
+<button class="px-3 py-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container text-body-sm transition-colors flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+ Online (3)
+ </button>
+<button class="px-3 py-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container text-body-sm transition-colors flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+ Alerta / Latência (1)
+ </button>
+<button class="px-3 py-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container text-body-sm transition-colors flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-outline-variant"></span>
+ Em Manutenção (0)
+ </button>
+<button class="px-3 py-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container text-body-sm transition-colors flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+ Com Falha (0)
+ </button>
+</div>
+<!-- Quick Telemetry Badge -->
+<div class="hidden md:flex items-center gap-space-md pr-2">
+<div class="flex items-center gap-1.5 text-label-code font-label-code text-outline">
+<span class="material-symbols-outlined text-[15px] text-secondary">sync</span>
+<span>Webhook Global: 99.98% uptime</span>
+</div>
+</div>
+</div>
+<!-- ================= 2-COLUMN MAIN LAYOUT: BOT CARDS GRID + CONNECT DRAWER PANEL ================= -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-space-lg items-start">
+<!-- LEFT 2 COLUMNS: 4 TECHNICAL BOT CARDS -->
+<div class="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<!-- CARD 1: VIP Cripto Bot -->
+<div class="rim-card rounded-xl flex flex-col justify-between transition-all duration-150">
+<!-- Header -->
+<div class="p-space-md border-b border-outline-variant/30 flex items-start justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high border border-outline-variant/40 flex items-center justify-center font-label-code text-primary font-bold text-headline-sm">
+ ₿
+ </div>
+<div>
+<div class="flex items-center gap-1.5">
+<h3 class="text-headline-sm font-headline-sm text-on-surface font-semibold">VIP Cripto Bot</h3>
+<span class="material-symbols-outlined text-[14px] text-primary" title="Verificado">verified</span>
+</div>
+<span class="text-label-code font-label-code text-primary-fixed-dim hover:underline cursor-pointer">@vipcripto_bot</span>
+</div>
+</div>
+<!-- Status Badge (Approved style) -->
+<div class="h-[22px] px-2 rounded-full bg-[#10B981]/10 border border-[#10B981]/25 flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#10B981]"></span>
+<span class="text-[11px] font-label-code text-[#10B981] font-semibold">ONLINE • 18ms</span>
+</div>
+</div>
+<!-- Body Telemetry -->
+<div class="p-space-md space-y-space-md">
+<!-- Metrics Grid -->
+<div class="grid grid-cols-2 gap-space-sm p-space-sm rounded-lg bg-surface-container-lowest border border-outline-variant/20">
+<div>
+<span class="text-[11px] uppercase tracking-wider text-outline block">Faturamento Hoje</span>
+<div class="flex items-baseline gap-1.5 mt-0.5">
+<span class="text-headline-sm font-label-tabular text-on-surface font-semibold">R$ 8.940,00</span>
+<span class="text-[11px] font-label-code text-outline">(184 PIX)</span>
+</div>
+</div>
+<div>
+<span class="text-[11px] uppercase tracking-wider text-outline block">Taxa Conversão</span>
+<div class="flex items-baseline gap-1 mt-0.5">
+<span class="text-headline-sm font-label-tabular text-secondary font-semibold">72.4%</span>
+<span class="material-symbols-outlined text-[13px] text-secondary">trending_up</span>
+</div>
+</div>
+</div>
+<!-- Channel Linked -->
+<div class="flex items-center justify-between text-body-sm">
+<div class="flex items-center gap-1.5 text-outline">
+<span class="material-symbols-outlined text-[16px] text-primary">groups</span>
+<span class="text-on-surface-variant font-medium">Canal VIP Vinculado:</span>
+</div>
+<span class="text-label-code text-on-surface truncate max-w-[180px] font-medium">Crypto Alpha VIP (4.821 membros)</span>
+</div>
+<!-- Live Webhook Health -->
+<div class="flex items-center justify-between text-[11px] font-label-code text-outline border-t border-outline-variant/20 pt-2">
+<span>Webhook: <span class="text-secondary">Ativo (POST 200 OK)</span></span>
+<span>Último sync: 4s atrás</span>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="p-space-sm bg-surface-container-low/50 border-t border-outline-variant/30 flex items-center justify-between gap-1 rounded-b-xl">
+<button class="h-[30px] px-2.5 rounded-lg rim-secondary-btn text-on-surface text-body-sm font-body-sm flex items-center gap-1 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[14px]">tune</span>
+<span>Configurar</span>
+</button>
+<button class="h-[30px] px-2.5 rounded-lg rim-secondary-btn text-on-surface text-body-sm font-body-sm flex items-center gap-1 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[14px]">account_tree</span>
+<span>Fluxo de Vendas</span>
+</button>
+<button class="h-[30px] px-2 rounded-lg rim-secondary-btn text-outline hover:text-on-surface transition-colors" title="Webhooks">
+<span class="material-symbols-outlined text-[14px]">webhook</span>
+</button>
+<button class="h-[30px] w-8 rounded-lg rim-secondary-btn flex items-center justify-center text-outline hover:text-on-surface transition-colors" title="Mais Opções">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- CARD 2: Puma Ofertas Pro -->
+<div class="rim-card rounded-xl flex flex-col justify-between transition-all duration-150">
+<!-- Header -->
+<div class="p-space-md border-b border-outline-variant/30 flex items-start justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high border border-outline-variant/40 flex items-center justify-center font-label-code text-secondary font-bold text-headline-sm">
+ 
+ </div>
+<div>
+<div class="flex items-center gap-1.5">
+<h3 class="text-headline-sm font-headline-sm text-on-surface font-semibold">Puma Ofertas Pro</h3>
+<span class="material-symbols-outlined text-[14px] text-primary">verified</span>
+</div>
+<span class="text-label-code font-label-code text-primary-fixed-dim hover:underline cursor-pointer">@pumaofertas_bot</span>
+</div>
+</div>
+<!-- Status Badge (Approved style) -->
+<div class="h-[22px] px-2 rounded-full bg-[#10B981]/10 border border-[#10B981]/25 flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#10B981]"></span>
+<span class="text-[11px] font-label-code text-[#10B981] font-semibold">ONLINE • 24ms</span>
+</div>
+</div>
+<!-- Body Telemetry -->
+<div class="p-space-md space-y-space-md">
+<div class="grid grid-cols-2 gap-space-sm p-space-sm rounded-lg bg-surface-container-lowest border border-outline-variant/20">
+<div>
+<span class="text-[11px] uppercase tracking-wider text-outline block">Faturamento Hoje</span>
+<div class="flex items-baseline gap-1.5 mt-0.5">
+<span class="text-headline-sm font-label-tabular text-on-surface font-semibold">R$ 3.120,00</span>
+<span class="text-[11px] font-label-code text-outline">(68 PIX)</span>
+</div>
+</div>
+<div>
+<span class="text-[11px] uppercase tracking-wider text-outline block">Taxa Conversão</span>
+<div class="flex items-baseline gap-1 mt-0.5">
+<span class="text-headline-sm font-label-tabular text-secondary font-semibold">64.1%</span>
+<span class="material-symbols-outlined text-[13px] text-secondary">trending_up</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between text-body-sm">
+<div class="flex items-center gap-1.5 text-outline">
+<span class="material-symbols-outlined text-[16px] text-primary">groups</span>
+<span class="text-on-surface-variant font-medium">Canal VIP:</span>
+</div>
+<span class="text-label-code text-on-surface truncate max-w-[180px] font-medium">Achados Secretos (12.450 membros)</span>
+</div>
+<div class="flex items-center justify-between text-[11px] font-label-code text-outline border-t border-outline-variant/20 pt-2">
+<span>Webhook: <span class="text-secondary">Ativo (POST 200 OK)</span></span>
+<span>Último sync: 12s atrás</span>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="p-space-sm bg-surface-container-low/50 border-t border-outline-variant/30 flex items-center justify-between gap-1 rounded-b-xl">
+<button class="h-[30px] px-2.5 rounded-lg rim-secondary-btn text-on-surface text-body-sm font-body-sm flex items-center gap-1 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[14px]">tune</span>
+<span>Configurar</span>
+</button>
+<button class="h-[30px] px-2.5 rounded-lg rim-secondary-btn text-on-surface text-body-sm font-body-sm flex items-center gap-1 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[14px]">account_tree</span>
+<span>Fluxo de Vendas</span>
+</button>
+<button class="h-[30px] px-2 rounded-lg rim-secondary-btn text-outline hover:text-on-surface transition-colors" title="Webhooks">
+<span class="material-symbols-outlined text-[14px]">webhook</span>
+</button>
+<button class="h-[30px] w-8 rounded-lg rim-secondary-btn flex items-center justify-center text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- CARD 3: Mentoria Black Trader -->
+<div class="rim-card rounded-xl flex flex-col justify-between transition-all duration-150">
+<!-- Header -->
+<div class="p-space-md border-b border-outline-variant/30 flex items-start justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high border border-outline-variant/40 flex items-center justify-center font-label-code text-on-surface font-bold text-headline-sm">
+ 
+ </div>
+<div>
+<div class="flex items-center gap-1.5">
+<h3 class="text-headline-sm font-headline-sm text-on-surface font-semibold">Mentoria Black Trader</h3>
+<span class="material-symbols-outlined text-[14px] text-primary">verified</span>
+</div>
+<span class="text-label-code font-label-code text-primary-fixed-dim hover:underline cursor-pointer">@mentoriapro_bot</span>
+</div>
+</div>
+<!-- Status Badge (Approved style) -->
+<div class="h-[22px] px-2 rounded-full bg-[#10B981]/10 border border-[#10B981]/25 flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#10B981]"></span>
+<span class="text-[11px] font-label-code text-[#10B981] font-semibold">ONLINE • 15ms</span>
+</div>
+</div>
+<!-- Body Telemetry -->
+<div class="p-space-md space-y-space-md">
+<div class="grid grid-cols-2 gap-space-sm p-space-sm rounded-lg bg-surface-container-lowest border border-outline-variant/20">
+<div>
+<span class="text-[11px] uppercase tracking-wider text-outline block">Faturamento</span>
+<div class="flex items-baseline gap-1.5 mt-0.5">
+<span class="text-headline-sm font-label-tabular text-on-surface font-semibold">R$ 1.740,00</span>
+<span class="text-[11px] font-label-code text-outline">(18 PIX)</span>
+</div>
+</div>
+<div>
+<span class="text-[11px] uppercase tracking-wider text-outline block">Taxa Conversão</span>
+<div class="flex items-baseline gap-1 mt-0.5">
+<span class="text-headline-sm font-label-tabular text-secondary font-semibold">81.0%</span>
+<span class="material-symbols-outlined text-[13px] text-secondary">trending_up</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between text-body-sm">
+<div class="flex items-center gap-1.5 text-outline">
+<span class="material-symbols-outlined text-[16px] text-primary">groups</span>
+<span class="text-on-surface-variant font-medium">Canal VIP:</span>
+</div>
+<span class="text-label-code text-on-surface truncate max-w-[180px] font-medium">Mentoria Elite (310 membros)</span>
+</div>
+<div class="flex items-center justify-between text-[11px] font-label-code text-outline border-t border-outline-variant/20 pt-2">
+<span>Webhook: <span class="text-secondary">Ativo (POST 200 OK)</span></span>
+<span>Último sync: 1s atrás</span>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="p-space-sm bg-surface-container-low/50 border-t border-outline-variant/30 flex items-center justify-between gap-1 rounded-b-xl">
+<button class="h-[30px] px-2.5 rounded-lg rim-secondary-btn text-on-surface text-body-sm font-body-sm flex items-center gap-1 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[14px]">tune</span>
+<span>Configurar</span>
+</button>
+<button class="h-[30px] px-2.5 rounded-lg rim-secondary-btn text-on-surface text-body-sm font-body-sm flex items-center gap-1 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[14px]">account_tree</span>
+<span>Fluxo de Vendas</span>
+</button>
+<button class="h-[30px] px-2 rounded-lg rim-secondary-btn text-outline hover:text-on-surface transition-colors" title="Webhooks">
+<span class="material-symbols-outlined text-[14px]">webhook</span>
+</button>
+<button class="h-[30px] w-8 rounded-lg rim-secondary-btn flex items-center justify-center text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- CARD 4: Sinais Forex Gold -->
+<div class="rim-card rounded-xl flex flex-col justify-between transition-all duration-150 border-tertiary-container/40">
+<!-- Header -->
+<div class="p-space-md border-b border-outline-variant/30 flex items-start justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high border border-outline-variant/40 flex items-center justify-center font-label-code text-tertiary font-bold text-headline-sm">
+ 
+ </div>
+<div>
+<div class="flex items-center gap-1.5">
+<h3 class="text-headline-sm font-headline-sm text-on-surface font-semibold">Sinais Forex Gold</h3>
+<span class="material-symbols-outlined text-[14px] text-tertiary">warning</span>
+</div>
+<span class="text-label-code font-label-code text-primary-fixed-dim hover:underline cursor-pointer">@sinaisforex_bot</span>
+</div>
+</div>
+<!-- Status Badge (Pending / Alert style) -->
+<div class="h-[22px] px-2 rounded-full bg-[#F59E0B]/10 border border-[#F59E0B]/25 flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#F59E0B] animate-pulse"></span>
+<span class="text-[11px] font-label-code text-[#F59E0B] font-semibold">ALERTA • 142ms</span>
+</div>
+</div>
+<!-- Body Telemetry -->
+<div class="p-space-md space-y-space-md">
+<div class="grid grid-cols-2 gap-space-sm p-space-sm rounded-lg bg-surface-container-lowest border border-outline-variant/20">
+<div>
+<span class="text-[11px] uppercase tracking-wider text-outline block">Faturamento</span>
+<div class="flex items-baseline gap-1.5 mt-0.5">
+<span class="text-headline-sm font-label-tabular text-on-surface font-semibold">R$ 480,00</span>
+<span class="text-[11px] font-label-code text-outline">(10 PIX)</span>
+</div>
+</div>
+<div>
+<span class="text-[11px] uppercase tracking-wider text-outline block">Taxa Conversão</span>
+<div class="flex items-baseline gap-1 mt-0.5">
+<span class="text-headline-sm font-label-tabular text-tertiary font-semibold">51.2%</span>
+<span class="material-symbols-outlined text-[13px] text-tertiary">trending_flat</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between text-body-sm">
+<div class="flex items-center gap-1.5 text-outline">
+<span class="material-symbols-outlined text-[16px] text-primary">groups</span>
+<span class="text-on-surface-variant font-medium">Canal VIP:</span>
+</div>
+<span class="text-label-code text-on-surface truncate max-w-[180px] font-medium">Sala Free &gt; VIP (1.920 membros)</span>
+</div>
+<div class="flex items-center justify-between text-[11px] font-label-code text-outline border-t border-outline-variant/20 pt-2">
+<span>Webhook: <span class="text-tertiary">Alta Latência (&gt;100ms)</span></span>
+<span>Último sync: 48s atrás</span>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="p-space-sm bg-surface-container-low/50 border-t border-outline-variant/30 flex items-center justify-between gap-1 rounded-b-xl">
+<button class="h-[30px] px-2.5 rounded-lg rim-secondary-btn text-on-surface text-body-sm font-body-sm flex items-center gap-1 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[14px]">tune</span>
+<span>Configurar</span>
+</button>
+<button class="h-[30px] px-2.5 rounded-lg rim-secondary-btn text-on-surface text-body-sm font-body-sm flex items-center gap-1 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[14px]">account_tree</span>
+<span>Fluxo de Vendas</span>
+</button>
+<button class="h-[30px] px-2 rounded-lg rim-secondary-btn text-tertiary hover:text-on-surface transition-colors" title="Verificar Webhook">
+<span class="material-symbols-outlined text-[14px]">speed</span>
+</button>
+<button class="h-[30px] w-8 rounded-lg rim-secondary-btn flex items-center justify-center text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+<!-- RIGHT 1 COLUMN: TECHNICAL WIZARD CARD / DRAWER DE DESTAQUE: CONECTAR NOVO BOT -->
+<div class="xl:col-span-1">
+<div class="rim-card rounded-xl overflow-hidden border-primary/40 shadow-2xl relative">
+<!-- Top specular rim bar -->
+<div class="h-1 bg-gradient-to-r from-primary-container via-primary-fixed-dim to-secondary"></div>
+<!-- Panel Header -->
+<div class="p-space-md border-b border-outline-variant/30 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-md bg-primary-container/20 border border-primary/40 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">add_link</span>
+</div>
+<div>
+<h2 class="text-headline-sm font-headline-sm text-on-surface font-semibold">Conectar Novo Bot</h2>
+<span class="text-[11px] font-label-code text-outline">Telegram BotFather API API v7.2</span>
+</div>
+</div>
+<span class="text-[10px] font-label-code px-2 py-0.5 rounded bg-surface-container-high border border-outline-variant/30 text-secondary">
+ SSL 256-BIT
+ </span>
+</div>
+<!-- Form Content -->
+<div class="p-space-md space-y-space-md">
+<!-- Step 1: Tutorial note -->
+<div class="p-space-sm rounded-lg bg-surface-container-lowest border border-outline-variant/30 text-[12px] text-on-surface-variant flex items-start gap-2">
+<span class="material-symbols-outlined text-primary text-[18px] flex-shrink-0 mt-0.5">info</span>
+<p>Abra o <a class="text-primary underline font-medium hover:text-white" href="https://t.me/BotFather" target="_blank">@BotFather</a> no Telegram, execute <code class="text-label-code bg-surface-container-high px-1 py-0.2 rounded text-on-surface">/newbot</code> e copie a chave HTTP API gerada.</p>
+</div>
+<!-- Step 2: Bot Token Input with Masking -->
+<div class="space-y-1.5">
+<div class="flex items-center justify-between">
+<label class="text-[11px] uppercase tracking-wider font-semibold text-outline">Bot Token do Telegram</label>
+<span class="text-[10px] font-label-code text-secondary">Token Válido </span>
+</div>
+<div class="relative">
+<input class="w-full h-[36px] px-3 pr-10 rounded-lg bg-surface-container-lowest border border-primary/50 text-on-surface font-label-code text-[12px] focus:outline-none focus:border-primary transition-all" id="inputBotToken" type="password" value="7182948291:AAH9bK8d_j29LmQ09aBv8x7P12-xX9"/>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors" title="Mostrar/Ocultar" type="button">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+</button>
+</div>
+<p class="text-[11px] text-outline font-label-code">Mascarado para proteção contra vazamentos de credencial.</p>
+</div>
+<!-- Step 3: Realtime Latency & Ping Validator Check -->
+<div class="p-space-sm rounded-lg bg-surface-container-lowest border border-outline-variant/20 space-y-2">
+<div class="flex items-center justify-between text-body-sm">
+<span class="text-outline font-medium">Handshake Webhook:</span>
+<div class="flex items-center gap-1.5 text-secondary text-label-code font-medium">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span>200 OK • 19ms</span>
+</div>
+</div>
+<div class="flex items-center justify-between text-body-sm">
+<span class="text-outline font-medium">Bot Detectado:</span>
+<span class="font-label-code text-on-surface font-semibold">@puma_vipmaster_bot</span>
+</div>
+</div>
+<!-- Step 4: Channels / VIP Groups Synchronization -->
+<div class="space-y-1.5">
+<label class="text-[11px] uppercase tracking-wider font-semibold text-outline">Canal ou Grupo VIP Alvo</label>
+<div class="relative">
+<select class="w-full h-[36px] px-3 rounded-lg bg-surface-container-lowest border border-outline-variant/40 text-on-surface text-body-sm focus:outline-none focus:border-primary appearance-none cursor-pointer">
+<option selected="">Canal VIP Black Diamond (ID: -1001928374)</option>
+<option>Sala de Sinais Automatizada (ID: -1002847192)</option>
+<option>+ Criar &amp; Conectar Novo Grupo Administrado</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-outline text-[16px] pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- Step 5: Automation Preset -->
+<div class="space-y-1.5">
+<label class="text-[11px] uppercase tracking-wider font-semibold text-outline">Preset de Fluxo Inicial</label>
+<div class="grid grid-cols-2 gap-2">
+<label class="flex items-center gap-2 p-2 rounded-lg bg-surface-container-high border border-primary/40 cursor-pointer">
+<input checked="" class="text-primary-container focus:ring-0" name="flow_preset" type="radio"/>
+<span class="text-body-sm text-on-surface font-medium leading-none">Checkout PIX</span>
+</label>
+<label class="flex items-center gap-2 p-2 rounded-lg bg-surface-container-lowest border border-outline-variant/30 hover:border-outline-variant/60 cursor-pointer">
+<input class="text-primary-container focus:ring-0" name="flow_preset" type="radio"/>
+<span class="text-body-sm text-outline leading-none">Suporte IA</span>
+</label>
+</div>
+</div>
+<!-- Primary Submit Button -->
+<div class="pt-2">
+<button class="w-full h-[38px] rounded-lg rim-primary-btn text-white text-body-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-lg shadow-primary-container/20">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+<span>Validar &amp; Ativar Webhook</span>
+</button>
+</div>
+<!-- Security Disclaimer -->
+<div class="text-center">
+<span class="text-[11px] font-label-code text-outline">
+ Criptografia de ponta a ponta • Certificado SSL TLS 1.3
+ </span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ================= COMPACT LOGS & BOT EVENTS MONITOR (BOTTOM STRIP) ================= -->
+<div class="rim-card rounded-xl p-space-md">
+<div class="flex items-center justify-between pb-3 border-b border-outline-variant/30">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">terminal</span>
+<span class="text-headline-sm font-headline-sm font-semibold text-on-surface">Console de Eventos em Tempo Real</span>
+<span class="text-label-code font-label-code text-outline text-[11px]">• Conexão WebSocket viva</span>
+</div>
+<button class="text-[11px] font-label-code text-outline hover:text-on-surface flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">cleaning_services</span>
+<span>Limpar Logs</span>
+</button>
+</div>
+<div class="mt-3 font-label-code text-[12px] space-y-1.5 text-on-surface-variant overflow-x-auto">
+<div class="flex items-center gap-3">
+<span class="text-outline">11:42:08.102</span>
+<span class="text-secondary font-semibold">[PIX_PAID]</span>
+<span class="text-on-surface">R$ 97,00 recebido via @vipcripto_bot</span>
+<span class="text-outline">— Cliente @marcos_trader liberado no grupo (-1004821)</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-outline">11:41:55.840</span>
+<span class="text-primary font-semibold">[WEBHOOK]</span>
+<span class="text-on-surface">POST /api/v1/telegram/718294...</span>
+<span class="text-secondary">200 OK (18ms)</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-outline">11:40:12.311</span>
+<span class="text-tertiary font-semibold">[LATENCY_WARN]</span>
+<span class="text-on-surface">@sinaisforex_bot resposta do Telegram demorou 142ms</span>
+<span class="text-outline">— Gateway recalibrado para polling adaptativo</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Lightweight Inline JS for Interactive Micro-States -->
+<script>
+ // Example interactive response on connection validation
+ const openBtn = document.getElementById('btnOpenConnectModal');
+ const tokenInput = document.getElementById('inputBotToken');
+
+ if (openBtn && tokenInput) {
+ openBtn.addEventListener('click', () => {
+ tokenInput.focus();
+ tokenInput.classList.add('ring-2', 'ring-primary');
+ setTimeout(() => {
+ tokenInput.classList.remove('ring-2', 'ring-primary');
+ }, 1200);
+ });
+ }
+ </script>
+
+<script>
+ document.addEventListener('DOMContentLoaded', () => {
+ // 1. Mapeamento de abas para URLs reais do sistema
+ const navMap = {
+ 'tab-dashboard': '/dashboard',
+ 'tab-robos': '/robos',
+ 'tab-fluxos': '/fluxos',
+ 'tab-pendencias': '/clientes',
+ 'tab-gateways': '/gateways'
+ };
+
+ document.querySelectorAll('[data-nav]').forEach(btn => {
+ const targetKey = btn.getAttribute('data-nav');
+ const targetUrl = navMap[targetKey];
+ if (targetUrl) {
+ btn.style.cursor = 'pointer';
+ btn.addEventListener('click', (e) => {
+ e.preventDefault();
+ window.location.href = targetUrl;
+ });
+ }
+ });
+
+ // 2. Destacar item ativo de acordo com a rota atual
+ const currentPath = window.location.pathname;
+ document.querySelectorAll('[data-nav]').forEach(btn => {
+ const targetKey = btn.getAttribute('data-nav');
+ const targetUrl = navMap[targetKey];
+ if (targetUrl === currentPath) {
+ btn.classList.add('bg-surface-container-high', 'text-primary', 'border-l-2', 'border-primary');
+ btn.classList.remove('text-on-surface-variant');
+ const icon = btn.querySelector('.material-symbols-outlined');
+ if (icon) icon.classList.add('text-primary');
+ } else {
+ btn.classList.remove('bg-surface-container-high', 'border-l-2', 'border-primary');
+ }
+ });
+
+ // 3. Suporte ao atalho ⌘B para colapsar/expandir a sidebar
+ const toggleBtn = document.getElementById('toggle-sidebar');
+ const sidebar = document.getElementById('main-sidebar');
+ const mainContent = document.querySelector('main');
+
+ function toggleSidebar() {
+ if (!sidebar) return;
+ if (sidebar.style.transform === 'translateX(-100%)') {
+ sidebar.style.transform = 'translateX(0)';
+ if (mainContent) mainContent.style.marginLeft = '16rem';
+ } else {
+ sidebar.style.transform = 'translateX(-100%)';
+ if (mainContent) mainContent.style.marginLeft = '0';
+ }
+ }
+
+ if (toggleBtn) {
+ toggleBtn.addEventListener('click', toggleSidebar);
+ }
+
+ document.addEventListener('keydown', (e) => {
+ if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+ e.preventDefault();
+ toggleSidebar();
+ }
+ });
+ });
+</script>
+
+
+<script>
+ (function() {
+ // Auth Guard: protege a rota caso não haja token
+ const token = localStorage.getItem('puma_token');
+ const userRaw = localStorage.getItem('puma_user');
+
+ if (!token && !window.location.search.includes('preview=1')) {
+ // Redireciona de forma segura para login
+ window.location.href = '/login?expired=1';
+ return;
+ }
+
+ if (userRaw) {
+ try {
+ const user = JSON.parse(userRaw);
+ document.addEventListener('DOMContentLoaded', () => {
+ // Atualizar nome do usuário e avatar na sidebar
+ const nameEl = document.querySelector('.font-headline-sm.text-body-sm.font-medium');
+ if (nameEl) nameEl.textContent = user.name || 'Operador Alpha';
+
+ const avatarEl = document.querySelector('.relative.w-7.h-7');
+ if (avatarEl && user.name) {
+ const initials = user.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+ avatarEl.childNodes[0].nodeValue = initials + ' ';
+ }
+ });
+ } catch (e) {}
+ }
+
+ // Adicionar botão de logout funcional no rodapé da sidebar
+ document.addEventListener('DOMContentLoaded', () => {
+ const footerNav = document.querySelector('#main-sidebar .border-t.border-outline-variant\\/30');
+ if (footerNav && !document.getElementById('logout-btn')) {
+ const logoutBtn = document.createElement('button');
+ logoutBtn.id = 'logout-btn';
+ logoutBtn.className = 'w-full flex items-center justify-between px-space-md py-space-sm rounded-lg text-error hover:bg-error/10 text-body-sm transition-colors mt-1';
+ logoutBtn.innerHTML = `
+ <div class="flex items-center gap-space-sm">
+ <span class="material-symbols-outlined text-error" data-icon="logout">logout</span>
+ <span>Sair da Conta</span>
+ </div>
+ `;
+ logoutBtn.addEventListener('click', () => {
+ localStorage.removeItem('puma_token');
+ localStorage.removeItem('puma_user');
+ window.location.href = '/login';
+ });
+ footerNav.appendChild(logoutBtn);
+ }
+ });
+ })();
+</script>
+
+</body></html>

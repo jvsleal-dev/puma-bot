@@ -1,0 +1,339 @@
+/* Stitch Design System - Puma Bot - Telegram PIX SaaS */
+:root {
+  /* Stitch Overrides */
+  --stitch-primary: #7c3aed;
+  --stitch-secondary: #10b981;
+  --stitch-tertiary: #f59e0b;
+  --stitch-neutral: #09090b;
+
+  /* Stitch Named Colors */
+  --stitch-background: #131315;
+  --stitch-surface: #131315;
+  --stitch-surface-dim: #131315;
+  --stitch-surface-bright: #39393b;
+  --stitch-surface-variant: #353437;
+  --stitch-surface-container-lowest: #0e0e10;
+  --stitch-surface-container-low: #1c1b1d;
+  --stitch-surface-container: #201f22;
+  --stitch-surface-container-high: #2a2a2c;
+  --stitch-surface-container-highest: #353437;
+
+  --stitch-on-surface: #e5e1e4;
+  --stitch-on-surface-variant: #ccc3d8;
+  --stitch-on-background: #e5e1e4;
+
+  --stitch-primary-tint: #d2bbff;
+  --stitch-primary-container: #7c3aed;
+  --stitch-primary-fixed: #eaddff;
+  --stitch-on-primary: #3f008e;
+  --stitch-on-primary-container: #ede0ff;
+  --stitch-on-primary-fixed: #25005a;
+  --stitch-on-primary-fixed-variant: #5a00c6;
+
+  --stitch-secondary-color: #4edea3;
+  --stitch-secondary-container: #00a572;
+  --stitch-on-secondary: #003824;
+  --stitch-on-secondary-container: #00311f;
+
+  --stitch-tertiary-color: #ffb95f;
+  --stitch-tertiary-container: #905b00;
+  --stitch-on-tertiary: #472a00;
+
+  --stitch-outline: #958da1;
+  --stitch-outline-variant: #4a4455;
+
+  /* Tipografias Exatas do Stitch */
+  --font-headline: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-label: "JetBrains Mono", monospace;
+
+  /* Roundness (ROUND_FOUR do Stitch: 16px para containers, 8px para botões e inputs) */
+  --roundness-xs: 4px;
+  --roundness-sm: 8px;
+  --roundness-md: 12px;
+  --roundness-lg: 16px;
+  --roundness-full: 9999px;
+
+  /* Espaçamentos do Stitch */
+  --space-2xs: 0.125rem;
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 0.75rem;
+  --space-lg: 1rem;
+  --space-xl: 1.5rem;
+  --gutter: 1rem;
+  --gutter-desktop: 1.25rem;
+  --margin: 1rem;
+  --margin-desktop: 2rem;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--stitch-background);
+  color: var(--stitch-on-background);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: var(--font-headline);
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+.font-headline-xl {
+  font-family: var(--font-headline);
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 38px;
+}
+
+.font-headline-lg {
+  font-family: var(--font-headline);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 30px;
+}
+
+.font-headline-md {
+  font-family: var(--font-headline);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.font-headline-sm {
+  font-family: var(--font-headline);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.font-body-lg {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 22px;
+}
+
+.font-body-md {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.font-body-sm {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+.font-label-badge {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 14px;
+}
+
+.font-label-code {
+  font-family: var(--font-label);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.font-label-tabular {
+  font-family: var(--font-label);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Navbar Stitch */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(19, 19, 21, 0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--stitch-surface-container);
+  padding: 0.85rem var(--margin-desktop);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand-container {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.brand-logo {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--stitch-primary) 0%, #4f46e5 100%);
+  border-radius: var(--roundness-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 24px rgba(124, 58, 237, 0.35);
+}
+
+.brand-logo svg {
+  width: 22px;
+  height: 22px;
+  fill: #ffffff;
+}
+
+.brand-name {
+  font-family: var(--font-headline);
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xl);
+}
+
+.nav-link {
+  color: var(--stitch-on-surface-variant);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.nav-link:hover {
+  color: #ffffff;
+}
+
+.nav-cta-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+/* Botões do Design System */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--roundness-sm);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+}
+
+.btn-primary {
+  background: var(--stitch-primary);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+}
+
+.btn-primary:hover {
+  background: #6d28d9;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5);
+}
+
+.btn-outline {
+  background: var(--stitch-surface-container-low);
+  border: 1px solid var(--stitch-outline-variant);
+  color: var(--stitch-on-surface);
+}
+
+.btn-outline:hover {
+  background: var(--stitch-surface-container);
+  border-color: var(--stitch-outline);
+  color: #ffffff;
+}
+
+.btn-secondary {
+  background: var(--stitch-secondary);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+
+.btn-secondary:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--roundness-full);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 14px;
+}
+
+.badge-primary {
+  background: rgba(124, 58, 237, 0.15);
+  color: var(--stitch-primary-tint);
+  border: 1px solid rgba(124, 58, 237, 0.35);
+}
+
+.badge-secondary {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--stitch-secondary-color);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.badge-tertiary {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--stitch-tertiary-color);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+/* Rodapé */
+.footer {
+  margin-top: auto;
+  border-top: 1px solid var(--stitch-surface-container);
+  background: var(--stitch-surface-container-lowest);
+  padding: 3rem var(--margin-desktop) 2rem;
+  text-align: center;
+  color: var(--stitch-on-surface-variant);
+  font-size: 13px;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-xl);
+  margin-bottom: var(--space-lg);
+}
+
+.footer-links a:hover {
+  color: #ffffff;
+}

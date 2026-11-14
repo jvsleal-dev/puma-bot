@@ -1,0 +1,179 @@
+// ============================================================================
+// Puma Bot Database Schema - PostgreSQL (Supabase / Neon PgBouncer Pooler)
+// High-Concurrency, Mission-Critical PIX Telegram SaaS
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// -----------------------------------------------------------------------------
+// Enums
+// -----------------------------------------------------------------------------
+
+enum SaleStatus {
+  PENDING
+  PAID
+  EXPIRED
+  REFUNDED
+
+  @@map("sale_status")
+}
+
+enum GatewayProvider {
+  PUSHINPAY
+  MERCADOPAGO
+  ASAAS
+  EFI
+
+  @@map("gateway_provider")
+}
+
+enum MediaType {
+  PHOTO
+  VIDEO
+
+  @@map("media_type")
+}
+
+// -----------------------------------------------------------------------------
+// Model: User (Clientes do SaaS / Donos de Bots)
+// -----------------------------------------------------------------------------
+
+model User {
+  id              String           @id @default(uuid()) @db.Uuid
+  name            String           @db.VarChar(255)
+  email           String           @unique @db.VarChar(255)
+  passwordHash    String           @map("password_hash") @db.VarChar(255)
+  pixKey          String?          @map("pix_key") @db.VarChar(255)
+  gatewayProvider GatewayProvider? @default(PUSHINPAY) @map("gateway_provider")
+  gatewayToken    String?          @map("gateway_token") @db.Text
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  bots Bot[]
+
+  @@map("users")
+}
+
+// -----------------------------------------------------------------------------
+// Model: Bot (Instâncias conectadas ao Telegram)
+// -----------------------------------------------------------------------------
+
+model Bot {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  name          String   @db.VarChar(255)
+  username      String   @unique @db.VarChar(255)
+  botToken      String   @unique @map("bot_token") @db.VarChar(255)
+  webhookSecret String   @map("webhook_secret") @db.VarChar(255)
+  vipChatId     String   @map("vip_chat_id") @db.VarChar(255)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  flow              Flow?
+  sales             Sale[]
+  vipSubscriptions  VipSubscription[]
+
+  @@index([userId, active])
+  @@map("bots")
+}
+
+// -----------------------------------------------------------------------------
+// Model: Flow (Funil de Vendas e Automação no Telegram)
+// -----------------------------------------------------------------------------
+
+model Flow {
+  id             String     @id @default(uuid()) @db.Uuid
+  botId          String     @unique @map("bot_id") @db.Uuid
+  welcomeMessage String     @map("welcome_message") @db.Text
+  mediaUrl       String?    @map("media_url") @db.Text
+  mediaType      MediaType? @default(PHOTO) @map("media_type")
+  plansJson      Json       @default("[]") @map("plans_json")
+  remarketingMsg String?    @map("remarketing_msg") @db.Text
+  downsellPrice  Decimal?   @map("downsell_price") @db.Decimal(10, 2)
+  updatedAt      DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  bot Bot @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  @@map("flows")
+}
+
+// -----------------------------------------------------------------------------
+// Model: Sale (Transações PIX e Leads)
+// -----------------------------------------------------------------------------
+
+model Sale {
+  id                String     @id @default(uuid()) @db.Uuid
+  botId             String     @map("bot_id") @db.Uuid
+  telegramUserId    BigInt     @map("telegram_user_id")
+  telegramUsername  String?    @map("telegram_username") @db.VarChar(255)
+  telegramFirstName String?    @map("telegram_first_name") @db.VarChar(255)
+  planId            String     @map("plan_id") @db.VarChar(100)
+  planName          String     @map("plan_name") @db.VarChar(255)
+  durationDays      Int        @default(30) @map("duration_days")
+  amount            Decimal    @db.Decimal(10, 2)
+  pixTxid           String     @unique @map("pix_txid") @db.VarChar(255)
+  pixCopyPaste      String     @map("pix_copy_paste") @db.Text
+  status            SaleStatus @default(PENDING)
+  paidAt            DateTime?  @map("paid_at") @db.Timestamptz(6)
+  expiresAt         DateTime   @map("expires_at") @db.Timestamptz(6)
+  createdAt         DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  bot              Bot              @relation(fields: [botId], references: [id], onDelete: Cascade)
+  vipSubscription  VipSubscription?
+
+  @@index([pixTxid])
+  @@index([botId, status, createdAt(sort: Desc)])
+  @@index([telegramUserId, botId])
+  @@map("sales")
+}
+
+// -----------------------------------------------------------------------------
+// Model: VipSubscription (Controle de Acesso e Expiração no Grupo VIP)
+// -----------------------------------------------------------------------------
+
+model VipSubscription {
+  id             String    @id @default(uuid()) @db.Uuid
+  saleId         String    @unique @map("sale_id") @db.Uuid
+  botId          String    @map("bot_id") @db.Uuid
+  telegramUserId BigInt    @map("telegram_user_id")
+  chatId         String    @map("chat_id") @db.VarChar(255)
+  inviteLink     String    @map("invite_link") @db.Text
+  expiresAt      DateTime  @map("expires_at") @db.Timestamptz(6)
+  active         Boolean   @default(true)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  sale Sale @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  bot  Bot  @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  @@index([active, expiresAt])
+  @@index([telegramUserId, chatId])
+  @@map("vip_subscriptions")
+}
+
+// -----------------------------------------------------------------------------
+// Model: WebhookLog (Auditoria e Idempotência)
+// -----------------------------------------------------------------------------
+
+model WebhookLog {
+  id           String   @id @default(uuid()) @db.Uuid
+  provider     String   @db.VarChar(50) // "TELEGRAM" | "PIX"
+  externalId   String   @unique @map("external_id") @db.VarChar(255) // update_id ou txid
+  payload      Json     @map("payload")
+  processed    Boolean  @default(false)
+  errorMessage String?  @map("error_message") @db.Text
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([provider, createdAt(sort: Desc)])
+  @@map("webhook_logs")
+}
+
