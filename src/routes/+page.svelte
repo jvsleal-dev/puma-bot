@@ -1,8 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { slide, fade } from 'svelte/transition';
+  import FaqAccordion from '$lib/components/FaqAccordion.svelte';
 
   let faturamento = 50000;
   let isDemoModalOpen = false;
+  let showToast = false;
+  let toastTitle = 'Novo PIX Aprovado';
+  let toastValue = '+ R$ 97,00';
+  let toastDesc = '@usuario liberado no Canal VIP';
+  let toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   $: avgTicket = 97;
   $: salesCount = Math.round(faturamento / avgTicket);
@@ -11,38 +18,60 @@
   $: monthlySavings = Math.max(0, legacyCost - pumaCost);
   $: annualSavings = monthlySavings * 12;
 
+  const faqItems = [
+    {
+      question: 'Preciso pagar alguma taxa ou mensalidade para criar minha conta?',
+      answer: 'Não. O cadastro, a integração com múltiplos bots e o construtor de funis são 100% gratuitos. Você só paga R$ 0,50 quando uma venda via PIX for efetivamente confirmada e aprovada pelo banco.'
+    },
+    {
+      question: 'O dinheiro do PIX cai na minha conta ou fica retido com o Puma Bot?',
+      answer: 'O valor cai imediatamente na sua conta cadastrada junto ao gateway de liquidação (PushinPay, Mercado Pago, Efí Bank, etc). O Puma Bot não faz custódia do seu faturamento bruto.'
+    },
+    {
+      question: 'O que acontece se meu bot sofrer limite de requisições no Telegram?',
+      answer: 'O Puma Bot implementa arquitetura com balanceamento distribuído. Você pode cadastrar instâncias reservas do BotFather e nossa fila gerencia o backoff exponencial e o roteamento imediato de requisições.'
+    },
+    {
+      question: 'Posso usar meus próprios domínios e rastreadores (UTMify, Pixel)?',
+      answer: 'Sim! Temos suporte nativo para UTMify, Facebook Conversions API, TikTok Pixel e Google Ads, garantindo que você rastreie desde o clique do anúncio até o comando /start e a aprovação do PIX.'
+    }
+  ];
+
   function formatBrl(val: number) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0);
   }
 
+  function closeDemoModal() {
+    isDemoModalOpen = false;
+  }
+
+  function simulatePixPayment() {
+    toastTitle = 'Novo PIX Aprovado';
+    toastValue = `+ ${formatBrl(avgTicket)}`;
+    toastDesc = `@lead_${Math.floor(1000 + Math.random() * 9000)} liberado no Canal VIP`;
+    showToast = true;
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      showToast = false;
+    }, 4000);
+  }
+
   onMount(() => {
-    // FAQ Accordions
-    document.querySelectorAll('.faq-toggle').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const content = btn.nextElementSibling;
-        const icon = btn.querySelector('.material-symbols-outlined');
-        if (!content) return;
-        const isHidden = content.classList.contains('hidden');
-
-        document.querySelectorAll('.faq-content').forEach(c => c.classList.add('hidden'));
-        document.querySelectorAll('.faq-toggle .material-symbols-outlined').forEach((i: any) => i.style.transform = 'rotate(0deg)');
-
-        if (isHidden) {
-          content.classList.remove('hidden');
-          if (icon) (icon as HTMLElement).style.transform = 'rotate(180deg)';
-        }
-      });
-    });
-
-    // Keyboard shortcut K
+    // Atalho de teclado K / ESC
     function handleKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         isDemoModalOpen = !isDemoModalOpen;
       }
+      if (e.key === 'Escape' && isDemoModalOpen) {
+        isDemoModalOpen = false;
+      }
     }
     window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
+    return () => {
+      window.removeEventListener('keydown', handleKey);
+      if (toastTimer) clearTimeout(toastTimer);
+    };
   });
 </script>
 
@@ -126,11 +155,11 @@
 <span class="material-symbols-outlined text-[18px]">bolt</span>
  Criar Conta Gratuita
  </a>
-<a class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-surface-container-high hover:bg-surface-variant text-on-surface border border-outline-variant/40 font-headline-sm text-headline-sm font-medium active:scale-[0.98] transition-all group" href="#demo">
+<button type="button" on:click={() => isDemoModalOpen = true} class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-surface-container-high hover:bg-surface-variant text-on-surface border border-outline-variant/40 font-headline-sm text-headline-sm font-medium active:scale-[0.98] transition-all group">
 <span class="material-symbols-outlined text-primary text-[18px]">play_circle</span>
  Ver Demonstração do Funil (2 min)
  <kbd class="hidden sm:inline-block px-1.5 py-0.5 rounded bg-surface-container-lowest border border-outline-variant/30 text-label-tabular font-label-tabular text-[11px] text-on-surface-variant group-hover:text-on-surface">K</kbd>
-</a>
+</button>
 </div>
 <!-- Telemetry Metric Strip -->
 <div class="mt-12 grid grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto pt-6 border-t border-outline-variant/20">
@@ -378,9 +407,9 @@
 <div class="mb-8">
 <div class="flex justify-between items-center mb-3">
 <label class="text-body-md font-body-md text-on-surface-variant" for="faturamentoRange">Seu faturamento mensal estimado:</label>
-<span class="font-label-tabular text-headline-md font-headline-md font-bold text-secondary" id="faturamentoDisplay">R$ 50.000</span>
+<span class="font-label-tabular text-headline-md font-headline-md font-bold text-secondary" id="faturamentoDisplay">{formatBrl(faturamento)}</span>
 </div>
-<input class="w-full h-2 bg-surface-container-high rounded-lg appearance-none cursor-pointer accent-primary-container" id="faturamentoRange" max="250000" min="5000" step="5000" type="range" value="50000"/>
+<input class="w-full h-2 bg-surface-container-high rounded-lg appearance-none cursor-pointer accent-primary-container" id="faturamentoRange" max="250000" min="5000" step="5000" type="range" bind:value={faturamento}/>
 <div class="flex justify-between text-[11px] font-label-code text-on-surface-variant mt-2">
 <span>R$ 5.000</span>
 <span>R$ 50.000</span>
@@ -392,12 +421,12 @@
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 border-t border-outline-variant/20 mb-6">
 <div class="p-4 rounded-xl bg-surface-container-low border border-error/20">
 <span class="text-body-sm font-body-sm text-error block mb-1">Plataformas Legadas (7.9% + R$ 1)</span>
-<span class="font-label-tabular text-headline-md font-headline-md font-bold text-error" id="custoTradicional">R$ 4.450,00</span>
+<span class="font-label-tabular text-headline-md font-headline-md font-bold text-error" id="custoTradicional">{formatBrl(legacyCost)}</span>
 <span class="text-[11px] text-on-surface-variant block mt-1">Descontados do seu saldo todo mês</span>
 </div>
 <div class="p-4 rounded-xl bg-primary-container/10 border border-primary/40">
 <span class="text-body-sm font-body-sm text-primary block mb-1">Com Puma Bot (R$ 0,50 fixo)</span>
-<span class="font-label-tabular text-headline-md font-headline-md font-bold text-secondary" id="custoPuma">R$ 257,00</span>
+<span class="font-label-tabular text-headline-md font-headline-md font-bold text-secondary" id="custoPuma">{formatBrl(pumaCost)}</span>
 <span class="text-[11px] text-primary block mt-1">Economia pura que volta pro seu bolso</span>
 </div>
 </div>
@@ -405,7 +434,7 @@
 <div class="p-4 rounded-xl bg-surface-container border border-secondary/30 flex items-center justify-between">
 <div>
 <span class="text-body-sm font-body-sm text-on-surface-variant block">Você economiza anualmente:</span>
-<span class="font-label-tabular text-headline-lg font-headline-lg font-extrabold text-secondary" id="economiaAnual">R$ 50.316,00</span>
+<span class="font-label-tabular text-headline-lg font-headline-lg font-extrabold text-secondary" id="economiaAnual">{formatBrl(annualSavings)}</span>
 </div>
 <a class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-secondary hover:bg-secondary/90 text-on-secondary font-headline-sm text-headline-sm font-semibold transition-all" href="/cadastro">
  Garantir Taxa Fixa
@@ -692,49 +721,8 @@
  Transparência radical em cada linha de documentação e precificação.
  </p>
 </div>
-<div class="space-y-3">
-<!-- Item 1 -->
-<div class="rounded-xl bg-surface-container-lowest border border-outline-variant/30 overflow-hidden">
-<button class="faq-toggle w-full p-4 text-left flex items-center justify-between font-headline-sm text-headline-sm font-medium text-on-surface">
-<span>Preciso pagar alguma taxa ou mensalidade para criar minha conta?</span>
-<span class="material-symbols-outlined text-outline transition-transform duration-200">expand_more</span>
-</button>
-<div class="faq-content px-4 pb-4 text-body-md text-on-surface-variant hidden border-t border-outline-variant/10 pt-3">
- Não. O cadastro, a integração com múltiplos bots e o construtor de funis são 100% gratuitos. Você só paga R$ 0,50 quando uma venda via PIX for efetivamente confirmada e aprovada pelo banco.
- </div>
-</div>
-<!-- Item 2 -->
-<div class="rounded-xl bg-surface-container-lowest border border-outline-variant/30 overflow-hidden">
-<button class="faq-toggle w-full p-4 text-left flex items-center justify-between font-headline-sm text-headline-sm font-medium text-on-surface">
-<span>O dinheiro do PIX cai na minha conta ou fica retido com o Puma Bot?</span>
-<span class="material-symbols-outlined text-outline transition-transform duration-200">expand_more</span>
-</button>
-<div class="faq-content px-4 pb-4 text-body-md text-on-surface-variant hidden border-t border-outline-variant/10 pt-3">
- O valor cai imediatamente na sua conta cadastrada junto ao gateway de liquidação (PushinPay, Mercado Pago, Efí Bank, etc). O Puma Bot não faz custódia do seu faturamento bruto.
- </div>
-</div>
-<!-- Item 3 -->
-<div class="rounded-xl bg-surface-container-lowest border border-outline-variant/30 overflow-hidden">
-<button class="faq-toggle w-full p-4 text-left flex items-center justify-between font-headline-sm text-headline-sm font-medium text-on-surface">
-<span>O que acontece se meu bot sofrer limite de requisições no Telegram?</span>
-<span class="material-symbols-outlined text-outline transition-transform duration-200">expand_more</span>
-</button>
-<div class="faq-content px-4 pb-4 text-body-md text-on-surface-variant hidden border-t border-outline-variant/10 pt-3">
- O Puma Bot implementa arquitetura com balanceamento distribuído. Você pode cadastrar instâncias reservas do BotFather e nossa fila gerencia o backoff exponencial e o roteamento imediato de requisições.
- </div>
-</div>
-<!-- Item 4 -->
-<div class="rounded-xl bg-surface-container-lowest border border-outline-variant/30 overflow-hidden">
-<button class="faq-toggle w-full p-4 text-left flex items-center justify-between font-headline-sm text-headline-sm font-medium text-on-surface">
-<span>Posso usar meus próprios domínios e rastreadores (UTMify, Pixel)?</span>
-<span class="material-symbols-outlined text-outline transition-transform duration-200">expand_more</span>
-</button>
-<div class="faq-content px-4 pb-4 text-body-md text-on-surface-variant hidden border-t border-outline-variant/10 pt-3">
- Sim! Temos suporte nativo para UTMify, Facebook Conversions API, TikTok Pixel e Google Ads, garantindo que você rastreie desde o clique do anúncio até o comando /start e a aprovação do PIX.
- </div>
-</div>
-</div>
-</div>
+    <FaqAccordion items={faqItems} />
+  </div>
 </section>
 <!-- Final CTA Callout -->
 <section class="py-20 relative overflow-hidden">
@@ -791,62 +779,77 @@
 </div>
 </div>
 </footer>
-<!-- Vanilla JS for Interactive Profit Calculator & FAQ Toggles -->
-
-
-
-
-
 <!-- Notificação Toast Flutuante em Tempo Real -->
-<div id="live-pix-toast" class="fixed bottom-6 right-6 z-50 transform translate-y-32 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-3 px-4 py-3 rounded-xl bg-surface-container-high/95 backdrop-blur-md border border-secondary/30 shadow-[0_12px_32px_rgba(0,0,0,0.6)]">
- <div class="w-8 h-8 rounded-lg bg-secondary/20 text-secondary flex items-center justify-center shrink-0">
- <span class="material-symbols-outlined text-[20px]">bolt</span>
- </div>
- <div>
- <div class="text-body-sm font-semibold text-white flex items-center gap-2">
- <span id="toast-title">Novo PIX Aprovado</span>
- <span id="toast-value" class="text-secondary font-label-tabular text-[12px] bg-secondary/10 px-1.5 py-0.2 rounded font-bold">+ R$ 97,00</span>
- </div>
- <div id="toast-desc" class="text-[11px] text-on-surface-variant font-label-code">@usuario liberado no Canal VIP</div>
- </div>
-</div>
+{#if showToast}
+  <div
+    transition:slide={{ duration: 250 }}
+    class="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl bg-[#111113]/95 backdrop-blur-md border border-[#10B981]/40 shadow-[0_12px_32px_rgba(0,0,0,0.6)]"
+  >
+    <div class="w-8 h-8 rounded-lg bg-[#10B981]/20 text-[#10B981] flex items-center justify-center shrink-0">
+      <span class="material-symbols-outlined text-[20px]">bolt</span>
+    </div>
+    <div>
+      <div class="text-xs font-semibold text-white flex items-center gap-2">
+        <span>{toastTitle}</span>
+        <span class="text-[#10B981] font-['JetBrains_Mono'] text-[11px] bg-[#10B981]/15 px-1.5 py-0.5 rounded font-bold">{toastValue}</span>
+      </div>
+      <div class="text-[11px] text-[#958DA1] font-['JetBrains_Mono']">{toastDesc}</div>
+    </div>
+  </div>
+{/if}
 
 <!-- Modal Interativo do Simulador de Funil (K / Ver Demonstração) -->
-<div id="demo-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 transition-opacity">
- <div class="relative w-full max-w-2xl bg-surface-container-low border border-outline-variant/40 rounded-2xl shadow-2xl overflow-hidden p-6">
- <div class="flex items-center justify-between pb-4 border-b border-outline-variant/20 mb-5">
- <div class="flex items-center gap-3">
- <div class="w-9 h-9 rounded-xl bg-primary-container/20 text-primary flex items-center justify-center">
- <span class="material-symbols-outlined">play_circle</span>
- </div>
- <div>
- <h3 class="font-headline-md font-bold text-white">Simulador do Funil Puma Bot</h3>
- <p class="text-body-sm text-on-surface-variant">Teste em tempo real a velocidade de conversão PIX</p>
- </div>
- </div>
- <button onclick="closeDemoModal()" class="w-8 h-8 rounded-lg bg-surface-container-high text-on-surface-variant hover:text-white flex items-center justify-center transition-colors">
- <span class="material-symbols-outlined text-[18px]">close</span>
- </button>
- </div>
+{#if isDemoModalOpen}
+  <div
+    transition:fade={{ duration: 150 }}
+    class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+    on:click|self={closeDemoModal}
+    role="dialog"
+    aria-modal="true"
+  >
+    <div class="relative w-full max-w-2xl bg-[#111113] border border-[#222226] rounded-2xl shadow-2xl overflow-hidden p-6">
+      <div class="flex items-center justify-between pb-4 border-b border-[#222226] mb-5">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-[#7C3AED]/20 text-[#7C3AED] flex items-center justify-center">
+            <span class="material-symbols-outlined">play_circle</span>
+          </div>
+          <div>
+            <h3 class="font-['Geist'] text-lg font-bold text-white">Simulador do Funil Puma Bot</h3>
+            <p class="text-xs text-[#958DA1]">Teste em tempo real a velocidade de conversão PIX</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          on:click={closeDemoModal}
+          class="w-8 h-8 rounded-lg bg-[#18181B] text-[#958DA1] hover:text-white flex items-center justify-center transition-colors"
+        >
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
 
- <div class="space-y-4">
- <div class="p-4 rounded-xl bg-surface-container-lowest border border-outline-variant/30 font-label-code text-body-sm text-on-surface space-y-2">
- <div class="text-outline">&gt; 1. Lead digita /start no Telegram</div>
- <div class="text-primary-tint">&gt; 2. Puma Bot gera Chave PIX Dinâmica (Payload EMV)</div>
- <div class="text-secondary">&gt; 3. Gateway dispara Webhook de Liquidação (18ms)</div>
- <div class="text-white">&gt; 4. Convite de uso único entregue ao cliente</div>
- </div>
+      <div class="space-y-4">
+        <div class="p-4 rounded-xl bg-[#09090B] border border-[#222226] font-['JetBrains_Mono'] text-xs text-white space-y-2">
+          <div class="text-[#958DA1]">&gt; 1. Lead digita /start no Telegram</div>
+          <div class="text-[#A78BFA]">&gt; 2. Puma Bot gera Chave PIX Dinâmica (Payload EMV)</div>
+          <div class="text-[#10B981]">&gt; 3. Gateway dispara Webhook de Liquidação (18ms)</div>
+          <div class="text-white">&gt; 4. Convite de uso único entregue ao cliente</div>
+        </div>
 
- <div class="flex items-center justify-between p-4 rounded-xl bg-surface-container border border-secondary/30">
- <div>
- <div class="font-bold text-white text-body-md">Simular Pagamento Instantâneo</div>
- <div class="text-body-sm text-on-surface-variant">Dispara um evento de PIX aprovado no feed da tela</div>
- </div>
- <button onclick="simulatePixPayment()" class="px-4 py-2 rounded-lg bg-secondary text-surface font-semibold text-body-sm hover:bg-secondary/90 transition-transform active:scale-95 flex items-center gap-1.5">
- <span class="material-symbols-outlined text-[18px]">electric_bolt</span>
- Disparar Teste
- </button>
- </div>
- </div>
- </div>
-</div>
+        <div class="flex items-center justify-between p-4 rounded-xl bg-[#18181B] border border-[#10B981]/30">
+          <div>
+            <div class="font-bold text-white text-xs sm:text-sm">Simular Pagamento Instantâneo</div>
+            <div class="text-[11px] text-[#958DA1]">Dispara um evento de PIX aprovado no feed da tela</div>
+          </div>
+          <button
+            type="button"
+            on:click={simulatePixPayment}
+            class="px-4 py-2 rounded-lg bg-[#10B981] text-black font-semibold text-xs hover:bg-[#059669] transition-transform active:scale-95 flex items-center gap-1.5"
+          >
+            <span class="material-symbols-outlined text-[18px]">electric_bolt</span>
+            Disparar Teste
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+{/if}
