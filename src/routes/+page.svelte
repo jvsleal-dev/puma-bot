@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { slide, fade } from 'svelte/transition';
   import FaqAccordion from '$lib/components/FaqAccordion.svelte';
+  import Footer from '$lib/components/Footer.svelte';
 
   let faturamento = 50000;
   let isDemoModalOpen = false;
@@ -39,6 +40,10 @@
 
   function formatBrl(val: number) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0);
+  }
+
+  function openDemoModal() {
+    isDemoModalOpen = true;
   }
 
   function closeDemoModal() {
@@ -577,7 +582,7 @@
 </div>
 </section>
 <!-- Step-by-Step Practical Implementation (4 Passos) -->
-<section class="py-20 md:py-28 relative">
+<section class="py-20 md:py-28 relative" id="passos">
 <div class="max-w-7xl mx-auto px-4 md:px-8">
 <div class="text-center max-w-3xl mx-auto mb-16">
 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container border border-outline-variant/40 text-on-surface font-label-code text-label-code mb-4">
@@ -627,7 +632,7 @@
 </div>
 </section>
 <!-- Real Market Proof & Social Evidence -->
-<section class="py-20 bg-surface-dim border-t border-outline-variant/20">
+<section class="py-20 bg-surface-dim border-t border-outline-variant/20" id="depoimentos">
 <div class="max-w-7xl mx-auto px-4 md:px-8">
 <div class="text-center max-w-2xl mx-auto mb-16">
 <h2 class="text-headline-xl font-headline-xl font-bold text-on-surface tracking-tight mb-3">
@@ -708,7 +713,7 @@
 </div>
 </section>
 <!-- Technical FAQ Accordion -->
-<section class="py-20 md:py-28 relative">
+<section class="py-20 md:py-28 relative" id="faq">
 <div class="max-w-4xl mx-auto px-4 md:px-8">
 <div class="text-center mb-14">
 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container border border-outline-variant/40 text-on-surface font-label-code text-label-code mb-4">
@@ -753,32 +758,8 @@
 </div>
 </div>
 </section>
-<!-- Footer (Shared Component JSON Blueprint) -->
-<footer class="w-full bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant/30">
-<div class="max-w-7xl mx-auto px-4 md:px-8 py-12 flex flex-col md:flex-row justify-between items-center gap-6">
-<!-- Brand & Copyright -->
-<div class="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
-<a class="flex items-center gap-2" href="/">
-<div class="w-6 h-6 rounded-lg bg-surface-container flex items-center justify-center p-0.5 border border-outline-variant/30">
-<img alt="Logo Puma Bot perfil violeta minimalista" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuApMe26OJRCrk9Da2M1tSH_NEUFMosNGCHptrVStnQTT55QwOPWNedO8DlKHnkENQNTYaHA5yGQHwwJ2qPI9plY7o8sGn1GddyD243xTxVM-TYELVX2Vw4tFG8FPaAZ4_CFN7kwbQMwmZcTkeAJ_9wrKIiGmsnkDvQR1rkfdEAct7cEpMaTdS0vjEzkGsdSYLOgVt4dbRODh-IzRsoK9QUC5AWbbdIjOOf-uZVEy7vFZL09aW0VWvjDlQ"/>
-</div>
-<span class="text-headline-sm font-headline-sm font-bold text-on-surface dark:text-on-surface">Puma Bot</span>
-</a>
-<span class="text-body-sm font-body-sm text-on-surface-variant max-w-md">
- © 2025 Puma Bot Inc. Todos os direitos reservados. Liquidação instantânea via PIX homologada pelo Banco Central.
- </span>
-</div>
-<!-- Links from JSON Blueprint -->
-<div class="flex flex-wrap justify-center md:justify-end gap-x-6 gap-y-2">
-<a class="text-body-sm font-body-sm text-on-surface-variant hover:text-on-surface dark:text-on-surface-variant dark:hover:text-on-surface font-normal transition-colors" href="/cadastro">Documentação API</a>
-<a class="text-body-sm font-body-sm text-on-surface-variant hover:text-on-surface dark:text-on-surface-variant dark:hover:text-on-surface font-normal transition-colors" href="/cadastro">Status do Sistema</a>
-<a class="text-body-sm font-body-sm text-on-surface-variant hover:text-on-surface dark:text-on-surface-variant dark:hover:text-on-surface font-normal transition-colors" href="/cadastro">Políticas de Privacidade</a>
-<a class="text-body-sm font-body-sm text-on-surface-variant hover:text-on-surface dark:text-on-surface-variant dark:hover:text-on-surface font-normal transition-colors" href="/cadastro">Termos de Serviço</a>
-<a class="text-body-sm font-body-sm text-on-surface-variant hover:text-on-surface dark:text-on-surface-variant dark:hover:text-on-surface font-normal transition-colors" href="/cadastro">Segurança e Certificações</a>
-<a class="text-body-sm font-body-sm text-on-surface-variant hover:text-on-surface dark:text-on-surface-variant dark:hover:text-on-surface font-normal transition-colors" href="/cadastro">Suporte Telegram</a>
-</div>
-</div>
-</footer>
+<!-- Footer Componentizado de Alta Conversão -->
+<Footer on:openDemo={openDemoModal} />
 <!-- Notificação Toast Flutuante em Tempo Real -->
 {#if showToast}
   <div
