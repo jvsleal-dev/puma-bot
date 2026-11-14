@@ -1,12 +1,21 @@
 import type { LayoutServerLoad } from './$types';
 import { prisma } from '$lib/server/prisma';
+import { parseUserIdFromSession } from '$lib/server/auth';
 
-export const load: LayoutServerLoad = async () => {
+export const load: LayoutServerLoad = async ({ cookies }) => {
   try {
-    const [user, activeBotsCount] = await Promise.all([
-      prisma.user.findFirst(),
-      prisma.bot.count({ where: { active: true } }).catch(() => 0)
-    ]);
+    const sessionCookie = cookies.get('puma_session');
+    const userId = sessionCookie ? parseUserIdFromSession(sessionCookie) : null;
+
+    let user = null;
+    if (userId) {
+      user = await prisma.user.findUnique({ where: { id: userId } }).catch(() => null);
+    }
+    if (!user) {
+      user = await prisma.user.findFirst().catch(() => null);
+    }
+
+    const activeBotsCount = await prisma.bot.count({ where: { active: true } }).catch(() => 0);
 
     return {
       user: {

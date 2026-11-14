@@ -16,6 +16,17 @@
   let simAmount = '47.90';
   let simLogs: string[] = [];
   let isSimulating = false;
+  let isCopied = false;
+
+  async function copyWebhookUrl() {
+    try {
+      await navigator.clipboard.writeText('https://SEU_DOMINIO/api/webhook/pix');
+      isCopied = true;
+      setTimeout(() => isCopied = false, 2500);
+    } catch (e) {
+      // fallback
+    }
+  }
 
   async function handleSaveGateway() {
     isSaving = true;
@@ -156,8 +167,9 @@
 
         <div class="space-y-4 text-xs font-['Inter']">
           <div>
-            <label class="block text-xs font-medium text-[#958DA1] mb-1.5">API Secret Token (Bearer)</label>
+            <label for="api-secret-token" class="block text-xs font-medium text-[#958DA1] mb-1.5">API Secret Token (Bearer)</label>
             <input
+              id="api-secret-token"
               type="password"
               bind:value={apiToken}
               placeholder={data.maskedToken}
@@ -167,8 +179,9 @@
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-[#958DA1] mb-1.5">Chave PIX Cadastrada</label>
+            <label for="pix-key-input" class="block text-xs font-medium text-[#958DA1] mb-1.5">Chave PIX Cadastrada</label>
             <input
+              id="pix-key-input"
               type="text"
               bind:value={pixKey}
               class="w-full h-9 px-3 rounded-lg bg-[#09090B] border border-[#222226] text-sm text-[#E5E1E4] focus:outline-none focus:border-[#7C3AED]"
@@ -176,16 +189,17 @@
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-[#958DA1] mb-1.5">URL de Notificação Webhook</label>
+            <label for="webhook-notification-url" class="block text-xs font-medium text-[#958DA1] mb-1.5">URL de Notificação Webhook</label>
             <div class="flex items-center gap-2">
               <input
+                id="webhook-notification-url"
                 type="text"
                 readonly
                 value="https://SEU_DOMINIO/api/webhook/pix"
                 class="w-full h-9 px-3 rounded-lg bg-[#09090B] border border-[#222226] text-xs font-['JetBrains_Mono'] text-[#958DA1] select-all"
               />
-              <Button variant="secondary" size="md" on:click={() => alert('URL copiada!')}>
-                Copiar
+              <Button variant="secondary" size="md" on:click={copyWebhookUrl}>
+                {isCopied ? 'Copiado!' : 'Copiar'}
               </Button>
             </div>
           </div>
@@ -203,8 +217,9 @@
 
         <div class="space-y-3 text-xs">
           <div>
-            <label class="block text-[11px] text-[#958DA1] mb-1">Valor do Pagamento</label>
+            <label for="sim-amount-input" class="block text-[11px] text-[#958DA1] mb-1">Valor do Pagamento</label>
             <input
+              id="sim-amount-input"
               type="number"
               bind:value={simAmount}
               class="w-full h-8 px-2.5 rounded bg-[#09090B] border border-[#222226] text-xs font-['JetBrains_Mono'] text-[#E5E1E4]"

@@ -277,8 +277,14 @@ try {
         if (where?.botId) {
           sales = sales.filter((s: any) => s.botId === where.botId);
         }
-        if (orderBy?.createdAt === 'desc') {
-          sales.sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+        if (orderBy) {
+          const sortKey = Object.keys(orderBy)[0];
+          const sortDir = (orderBy as any)[sortKey];
+          sales.sort((a: any, b: any) => {
+            const timeA = new Date(a[sortKey] || a.createdAt || 0).getTime();
+            const timeB = new Date(b[sortKey] || b.createdAt || 0).getTime();
+            return sortDir === 'asc' ? timeA - timeB : timeB - timeA;
+          });
         }
         if (take && typeof take === 'number') {
           sales = sales.slice(0, take);
@@ -372,9 +378,11 @@ try {
         });
         if (!sub) return null;
         const bot = db.bots.find((b: any) => b.id === sub.botId);
+        const sale = db.sales.find((s: any) => s.id === sub.saleId);
         return {
           ...sub,
-          bot: include?.bot ? bot : undefined
+          bot: include?.bot ? bot : undefined,
+          sale: include?.sale ? sale : undefined
         };
       },
       findUnique: async ({ where, include }: any = {}) => {
@@ -382,12 +390,14 @@ try {
         const sub = db.vipSubscriptions.find((v: any) => (where?.id && v.id === where.id) || (where?.saleId && v.saleId === where.saleId));
         if (!sub) return null;
         const bot = db.bots.find((b: any) => b.id === sub.botId);
+        const sale = db.sales.find((s: any) => s.id === sub.saleId);
         return {
           ...sub,
-          bot: include?.bot ? bot : undefined
+          bot: include?.bot ? bot : undefined,
+          sale: include?.sale ? sale : undefined
         };
       },
-      findMany: async ({ where, include }: any = {}) => {
+      findMany: async ({ where, include, orderBy, take }: any = {}) => {
         const db = this.getDB();
         let subs = [...db.vipSubscriptions];
         if (where?.active !== undefined) {
@@ -397,11 +407,25 @@ try {
           const ltDate = new Date(where.expiresAt.lt).getTime();
           subs = subs.filter((v: any) => new Date(v.expiresAt).getTime() < ltDate);
         }
+        if (orderBy) {
+          const sortKey = Object.keys(orderBy)[0];
+          const sortDir = (orderBy as any)[sortKey];
+          subs.sort((a: any, b: any) => {
+            const timeA = new Date(a[sortKey] || a.createdAt || 0).getTime();
+            const timeB = new Date(b[sortKey] || b.createdAt || 0).getTime();
+            return sortDir === 'asc' ? timeA - timeB : timeB - timeA;
+          });
+        }
+        if (take && typeof take === 'number') {
+          subs = subs.slice(0, take);
+        }
         return subs.map((sub: any) => {
           const bot = db.bots.find((b: any) => b.id === sub.botId);
+          const sale = db.sales.find((s: any) => s.id === sub.saleId);
           return {
             ...sub,
-            bot: include?.bot ? bot : undefined
+            bot: include?.bot ? bot : undefined,
+            sale: include?.sale ? sale : undefined
           };
         });
       },

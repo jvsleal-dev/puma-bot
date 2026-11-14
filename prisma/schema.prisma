@@ -51,6 +51,7 @@ model User {
   name            String           @db.VarChar(255)
   email           String           @unique @db.VarChar(255)
   passwordHash    String           @map("password_hash") @db.VarChar(255)
+  plan            String?          @default("PRO Trial (14 dias)") @map("plan") @db.VarChar(100)
   pixKey          String?          @map("pix_key") @db.VarChar(255)
   gatewayProvider GatewayProvider? @default(PUSHINPAY) @map("gateway_provider")
   gatewayToken    String?          @map("gateway_token") @db.Text

@@ -39,6 +39,16 @@
       "passwordHash": "7b8d456bf15701a6f130e6b5c4d4ac3d:93a3b6fd43c57b678276c63de4a46668147f4a63a1852fa1aef4aed8cd4ccbe28ac951cc55fa604e366d2ef101ea4a7be062e97137e11ac42282477db5f0f343",
       "createdAt": "2026-11-14T17:38:00.194Z",
       "plan": "PRO Trial (14 dias)"
+    },
+    {
+      "id": "usr_1794696550957",
+      "name": "Auditor Teste",
+      "email": "auditor_1794696550883@pumabot.com",
+      "passwordHash": "2963a295085fb3fb00f627883422dd11:df2d668b905040be07b8e8ce06d7989715fdb20595d73a29faf5301a57fef9240f9bad646671ba8fa056f8fa28cfdf4be64d4ed0dda9023dd40589419265022f",
+      "plan": "PRO Trial (14 dias)",
+      "gatewayProvider": "PUSHINPAY",
+      "createdAt": "2026-11-14T22:49:10.957Z",
+      "updatedAt": "2026-11-14T22:49:10.957Z"
     }
   ],
   "bots": [
@@ -80,7 +90,7 @@
         }
       ],
       "remarketingMsg": "Notamos que seu PIX ainda não foi liquidado. Restam apenas 10 minutos para garantir sua vaga.",
-      "downsellPrice": 37.0,
+      "downsellPrice": 37,
       "updatedAt": "2026-11-14T17:00:00.000Z"
     }
   ],

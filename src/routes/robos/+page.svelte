@@ -145,8 +145,9 @@
 
   <div class="space-y-4">
     <div>
-      <label class="block text-xs font-medium text-[#958DA1] mb-1.5">Nome de Identificação</label>
+      <label for="bot-name-input" class="block text-xs font-medium text-[#958DA1] mb-1.5">Nome de Identificação</label>
       <input
+        id="bot-name-input"
         type="text"
         bind:value={botName}
         placeholder="Ex: Puma VIP Trader Sinais"
@@ -155,8 +156,9 @@
     </div>
 
     <div>
-      <label class="block text-xs font-medium text-[#958DA1] mb-1.5">@Username do Bot (opcional)</label>
+      <label for="bot-username-input" class="block text-xs font-medium text-[#958DA1] mb-1.5">@Username do Bot (opcional)</label>
       <input
+        id="bot-username-input"
         type="text"
         bind:value={botUsername}
         placeholder="Ex: pumavip_bot"
@@ -165,8 +167,9 @@
     </div>
 
     <div>
-      <label class="block text-xs font-medium text-[#958DA1] mb-1.5">Bot Token (obtido via @BotFather)</label>
+      <label for="bot-token-input" class="block text-xs font-medium text-[#958DA1] mb-1.5">Bot Token (obtido via @BotFather)</label>
       <input
+        id="bot-token-input"
         type="password"
         bind:value={botToken}
         placeholder="123456789:ABCDefghIJKlmnoPQRstuvwxyZ"
@@ -176,8 +179,9 @@
     </div>
 
     <div>
-      <label class="block text-xs font-medium text-[#958DA1] mb-1.5">ID do Canal ou Grupo VIP</label>
+      <label for="bot-vip-chatid-input" class="block text-xs font-medium text-[#958DA1] mb-1.5">ID do Canal ou Grupo VIP</label>
       <input
+        id="bot-vip-chatid-input"
         type="text"
         bind:value={vipChatId}
         placeholder="Ex: -1001829482910"

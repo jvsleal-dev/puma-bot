@@ -8,7 +8,7 @@ import { prisma } from '$lib/server/prisma';
 
 export const load: PageServerLoad = async () => {
   try {
-    const [paidSales, allSales, user] = await Promise.all([
+    const [paidSales, allPaidSales, user] = await Promise.all([
       prisma.sale.findMany({
         where: { status: 'PAID' },
         orderBy: { paidAt: 'desc' },
@@ -18,13 +18,14 @@ export const load: PageServerLoad = async () => {
         }
       }),
       prisma.sale.findMany({
-        select: { amount: true, status: true, createdAt: true }
+        where: { status: 'PAID' },
+        select: { amount: true }
       }),
       prisma.user.findFirst()
     ]);
 
-    const totalGrossRevenue = paidSales.reduce((acc: number, curr: any) => acc + Number(curr.amount || 0), 0);
-    const totalTransactions = paidSales.length;
+    const totalGrossRevenue = allPaidSales.reduce((acc: number, curr: any) => acc + Number(curr.amount || 0), 0);
+    const totalTransactions = allPaidSales.length;
     const pumaFeesTotal = totalTransactions * 0.50; // R$ 0,50 por transação
     const netRevenue = totalGrossRevenue - pumaFeesTotal;
     const avgTicket = totalTransactions > 0 ? (totalGrossRevenue / totalTransactions) : 0;
@@ -68,3 +69,4 @@ export const load: PageServerLoad = async () => {
     };
   }
 };
+

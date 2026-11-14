@@ -29,6 +29,8 @@
   }
 </script>
 
+<svelte:window on:keydown={(e) => { if (e.key === 'Escape') { isTermsModalOpen = false; isPrivacyModalOpen = false; } }} />
+
 <footer class="w-full bg-[#08080A] border-t border-[#1F1F24] text-[#958DA1] font-['Inter'] relative overflow-hidden">
   <!-- Subtle Gradient Ambient Accent -->
   <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[1px] bg-gradient-to-r from-transparent via-[#7C3AED]/40 to-transparent pointer-events-none"></div>
@@ -349,11 +351,15 @@
     class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
     role="dialog"
     aria-modal="true"
-    tabindex="-1"
-    on:click|self={() => isTermsModalOpen = false}
-    on:keydown={(e) => e.key === 'Escape' && (isTermsModalOpen = false)}
   >
-    <div class="relative w-full max-w-2xl bg-[#111113] border border-[#222226] rounded-2xl shadow-2xl p-6 max-h-[85vh] overflow-y-auto space-y-4 font-['Inter'] text-xs text-[#958DA1]">
+    <button
+      type="button"
+      class="absolute inset-0 w-full h-full cursor-default bg-transparent border-0"
+      on:click={() => isTermsModalOpen = false}
+      aria-label="Fechar termos"
+      tabindex="-1"
+    ></button>
+    <div class="relative z-10 w-full max-w-2xl bg-[#111113] border border-[#222226] rounded-2xl shadow-2xl p-6 max-h-[85vh] overflow-y-auto space-y-4 font-['Inter'] text-xs text-[#958DA1]">
       <div class="flex items-center justify-between pb-3 border-b border-[#222226]">
         <h3 class="font-['Geist'] text-base font-bold text-[#E5E1E4]">Termos de Serviço — Puma Bot SaaS</h3>
         <button
@@ -398,11 +404,15 @@
     class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
     role="dialog"
     aria-modal="true"
-    tabindex="-1"
-    on:click|self={() => isPrivacyModalOpen = false}
-    on:keydown={(e) => e.key === 'Escape' && (isPrivacyModalOpen = false)}
   >
-    <div class="relative w-full max-w-2xl bg-[#111113] border border-[#222226] rounded-2xl shadow-2xl p-6 max-h-[85vh] overflow-y-auto space-y-4 font-['Inter'] text-xs text-[#958DA1]">
+    <button
+      type="button"
+      class="absolute inset-0 w-full h-full cursor-default bg-transparent border-0"
+      on:click={() => isPrivacyModalOpen = false}
+      aria-label="Fechar privacidade"
+      tabindex="-1"
+    ></button>
+    <div class="relative z-10 w-full max-w-2xl bg-[#111113] border border-[#222226] rounded-2xl shadow-2xl p-6 max-h-[85vh] overflow-y-auto space-y-4 font-['Inter'] text-xs text-[#958DA1]">
       <div class="flex items-center justify-between pb-3 border-b border-[#222226]">
         <h3 class="font-['Geist'] text-base font-bold text-[#E5E1E4]">Política de Privacidade & LGPD — Puma Bot SaaS</h3>
         <button

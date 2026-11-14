@@ -870,13 +870,17 @@
   <div
     transition:fade={{ duration: 150 }}
     class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
-    on:click|self={closeDemoModal}
-    on:keydown={(e) => e.key === 'Escape' && closeDemoModal()}
-    tabindex="-1"
     role="dialog"
     aria-modal="true"
   >
-    <div class="relative w-full max-w-2xl bg-[#111113] border border-[#222226] rounded-2xl shadow-2xl overflow-hidden p-6">
+    <button
+      type="button"
+      class="absolute inset-0 w-full h-full cursor-default bg-transparent border-0"
+      on:click={closeDemoModal}
+      aria-label="Fechar modal"
+      tabindex="-1"
+    ></button>
+    <div class="relative z-10 w-full max-w-2xl bg-[#111113] border border-[#222226] rounded-2xl shadow-2xl overflow-hidden p-6">
       <div class="flex items-center justify-between pb-4 border-b border-[#222226] mb-5">
         <div class="flex items-center gap-3">
           <div class="w-9 h-9 rounded-xl bg-[#7C3AED]/20 text-[#7C3AED] flex items-center justify-center">

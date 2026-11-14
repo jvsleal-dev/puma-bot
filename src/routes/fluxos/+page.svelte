@@ -101,6 +101,8 @@
           <span class="text-[11px] font-['JetBrains_Mono'] text-[#958DA1]">Suporta tags HTML (&lt;b&gt;, &lt;i&gt;)</span>
         </div>
         <textarea
+          id="welcome-message-input"
+          aria-label="Mensagem de Boas-Vindas (/start)"
           bind:value={welcomeMessage}
           rows="4"
           class="w-full p-3 rounded-lg bg-[#09090B] border border-[#222226] text-sm text-[#E5E1E4] font-['Inter'] focus:outline-none focus:border-[#7C3AED]"
@@ -124,16 +126,18 @@
             <div class="p-3.5 rounded-lg bg-[#09090B] border border-[#222226] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div class="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 <div>
-                  <label class="block text-[10px] uppercase font-['JetBrains_Mono'] text-[#958DA1] mb-1">Título</label>
+                  <label for="plan-title-{index}" class="block text-[10px] uppercase font-['JetBrains_Mono'] text-[#958DA1] mb-1">Título</label>
                   <input
+                    id="plan-title-{index}"
                     type="text"
                     bind:value={plan.title}
                     class="w-full h-8 px-2.5 rounded bg-[#111113] border border-[#222226] text-xs text-[#E5E1E4] focus:outline-none focus:border-[#7C3AED]"
                   />
                 </div>
                 <div>
-                  <label class="block text-[10px] uppercase font-['JetBrains_Mono'] text-[#958DA1] mb-1">Preço (R$)</label>
+                  <label for="plan-price-{index}" class="block text-[10px] uppercase font-['JetBrains_Mono'] text-[#958DA1] mb-1">Preço (R$)</label>
                   <input
+                    id="plan-price-{index}"
                     type="number"
                     step="0.01"
                     bind:value={plan.price}
@@ -141,8 +145,9 @@
                   />
                 </div>
                 <div>
-                  <label class="block text-[10px] uppercase font-['JetBrains_Mono'] text-[#958DA1] mb-1">Duração (Dias)</label>
+                  <label for="plan-duration-{index}" class="block text-[10px] uppercase font-['JetBrains_Mono'] text-[#958DA1] mb-1">Duração (Dias)</label>
                   <input
+                    id="plan-duration-{index}"
                     type="number"
                     bind:value={plan.durationDays}
                     class="w-full h-8 px-2.5 rounded bg-[#111113] border border-[#222226] text-xs font-['JetBrains_Mono'] text-[#E5E1E4] focus:outline-none focus:border-[#7C3AED]"
@@ -173,16 +178,18 @@
         </h2>
         <div class="space-y-3">
           <div>
-            <label class="block text-xs font-medium text-[#958DA1] mb-1.5">Mensagem de Remarketing (após 10 min de inatividade)</label>
+            <label for="flow-remarketing-msg" class="block text-xs font-medium text-[#958DA1] mb-1.5">Mensagem de Remarketing (após 10 min de inatividade)</label>
             <textarea
+              id="flow-remarketing-msg"
               bind:value={remarketingMsg}
               rows="3"
               class="w-full p-3 rounded-lg bg-[#09090B] border border-[#222226] text-sm text-[#E5E1E4] font-['Inter'] focus:outline-none focus:border-[#7C3AED]"
             ></textarea>
           </div>
           <div class="max-w-xs">
-            <label class="block text-xs font-medium text-[#958DA1] mb-1.5">Preço Promocional de Downsell (R$)</label>
+            <label for="flow-downsell-price" class="block text-xs font-medium text-[#958DA1] mb-1.5">Preço Promocional de Downsell (R$)</label>
             <input
+              id="flow-downsell-price"
               type="number"
               step="0.01"
               bind:value={downsellPrice}
