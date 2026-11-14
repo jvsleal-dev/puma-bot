@@ -34,3 +34,4 @@
     <p class="text-[11px] text-[#958DA1] mt-1 font-['Inter']">{subtitle}</p>
   {/if}
 </div>
+

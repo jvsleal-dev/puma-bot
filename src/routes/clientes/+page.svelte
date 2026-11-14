@@ -110,3 +110,4 @@
   <!-- Transactions Table -->
   <TransactionsTable transactions={filteredSales} onResend={handleResendVip} />
 </div>
+

@@ -42,3 +42,4 @@ export const load: PageServerLoad = async () => {
     };
   }
 };
+
