@@ -242,6 +242,32 @@ try {
         }
         return sales.length;
       },
+      findFirst: async ({ where, include }: any = {}) => {
+        const db = this.getDB();
+        const s = db.sales.find((item: any) => {
+          if (where?.OR && Array.isArray(where.OR)) {
+            const matchesOr = where.OR.some((condition: any) => {
+              if (condition.pixTxid && item.pixTxid === condition.pixTxid) return true;
+              if (condition.id && item.id === condition.id) return true;
+              return false;
+            });
+            if (!matchesOr) return false;
+          }
+          if (where?.id && item.id !== where.id) return false;
+          if (where?.pixTxid && item.pixTxid !== where.pixTxid) return false;
+          if (where?.status && item.status !== where.status) return false;
+          if (where?.botId && item.botId !== where.botId) return false;
+          return true;
+        });
+        if (!s) return null;
+        const bot = db.bots.find((b: any) => b.id === s.botId) || { botToken: '', vipChatId: '', name: 'Robô VIP' };
+        return {
+          ...s,
+          telegramUserId: BigInt(s.telegramUserId || '0'),
+          createdAt: new Date(s.createdAt || Date.now()),
+          bot: include?.bot ? bot : undefined
+        };
+      },
       findMany: async ({ where, orderBy, take, include }: any = {}) => {
         const db = this.getDB();
         let sales = [...db.sales];
@@ -334,6 +360,33 @@ try {
         }
         return subs.length;
       },
+      findFirst: async ({ where, include }: any = {}) => {
+        const db = this.getDB();
+        const sub = db.vipSubscriptions.find((v: any) => {
+          if (where?.id && v.id !== where.id) return false;
+          if (where?.saleId && v.saleId !== where.saleId) return false;
+          if (where?.botId && v.botId !== where.botId) return false;
+          if (where?.telegramUserId && v.telegramUserId.toString() !== where.telegramUserId.toString()) return false;
+          if (where?.active !== undefined && v.active !== where.active) return false;
+          return true;
+        });
+        if (!sub) return null;
+        const bot = db.bots.find((b: any) => b.id === sub.botId);
+        return {
+          ...sub,
+          bot: include?.bot ? bot : undefined
+        };
+      },
+      findUnique: async ({ where, include }: any = {}) => {
+        const db = this.getDB();
+        const sub = db.vipSubscriptions.find((v: any) => (where?.id && v.id === where.id) || (where?.saleId && v.saleId === where.saleId));
+        if (!sub) return null;
+        const bot = db.bots.find((b: any) => b.id === sub.botId);
+        return {
+          ...sub,
+          bot: include?.bot ? bot : undefined
+        };
+      },
       findMany: async ({ where, include }: any = {}) => {
         const db = this.getDB();
         let subs = [...db.vipSubscriptions];
@@ -373,6 +426,16 @@ try {
           return db.vipSubscriptions[idx];
         }
         return { id: where?.id, ...data };
+      },
+      delete: async ({ where }: any) => {
+        const db = this.getDB();
+        const idx = db.vipSubscriptions.findIndex((v: any) => v.id === where?.id);
+        if (idx !== -1) {
+          const removed = db.vipSubscriptions.splice(idx, 1)[0];
+          this.saveDB(db);
+          return removed;
+        }
+        return null;
       }
     };
 
@@ -382,6 +445,31 @@ try {
         const newLog = {
           id: 'log_' + Date.now(),
           ...data,
+          createdAt: new Date().toISOString()
+        };
+        db.webhookLogs.push(newLog);
+        this.saveDB(db);
+        return newLog;
+      },
+      findUnique: async ({ where }: any = {}) => {
+        const db = this.getDB();
+        return db.webhookLogs.find((l: any) => (where?.id && l.id === where.id) || (where?.externalId && l.externalId === where.externalId)) || null;
+      },
+      findFirst: async ({ where }: any = {}) => {
+        const db = this.getDB();
+        return db.webhookLogs.find((l: any) => (where?.externalId && l.externalId === where.externalId) || (where?.provider && l.provider === where.provider)) || null;
+      },
+      upsert: async ({ where, create, update }: any = {}) => {
+        const db = this.getDB();
+        const idx = db.webhookLogs.findIndex((l: any) => where?.externalId && l.externalId === where.externalId);
+        if (idx !== -1) {
+          db.webhookLogs[idx] = { ...db.webhookLogs[idx], ...update };
+          this.saveDB(db);
+          return db.webhookLogs[idx];
+        }
+        const newLog = {
+          id: 'log_' + Date.now(),
+          ...create,
           createdAt: new Date().toISOString()
         };
         db.webhookLogs.push(newLog);

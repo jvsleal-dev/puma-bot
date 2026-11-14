@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
+import { getRequest, setResponse } from '@sveltejs/kit/node';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -237,8 +238,47 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 429, { error: 'Too many requests. Please wait a minute.' });
   }
 
+  // ---------------------------------------------------------------------------
+  // 3. Servir Assets Estáticos do SvelteKit (_app/...)
+  // ---------------------------------------------------------------------------
+  if (pathname.startsWith('/_app/') || pathname.startsWith('/favicon.')) {
+    const assetPath = path.join(CLIENT_DIR, pathname);
+    if (fs.existsSync(assetPath) && fs.statSync(assetPath).isFile()) {
+      const ext = path.extname(assetPath).toLowerCase();
+      const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      res.writeHead(200, { 'Content-Type': contentType });
+      return fs.createReadStream(assetPath).pipe(res);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // 4. Delegação Prioritária para o Motor 100% SvelteKit SSR (Prisma, APIs e Webhooks)
+  // ---------------------------------------------------------------------------
+  if (svelteKitApp) {
+    try {
+      const webReq = await getRequest({
+        request: req,
+        base: `http://${req.headers.host || 'localhost:3000'}`
+      });
+
+      const webRes = await svelteKitApp.respond(webReq, {
+        getClientAddress() {
+          return clientIp;
+        }
+      });
+
+      if (webRes) {
+        await setResponse(res, webRes);
+        return;
+      }
+    } catch (ssrError) {
+      console.error('[SSR Engine Request Error]:', ssrError);
+    }
+  }
+
   // ===========================================================================
-  // 3. API: Autenticacao (Registro e Login com PBKDF2 e JWT)
+  // Fallback em Memória (Apenas quando SSR não estiver compilado)
   // ===========================================================================
   if (pathname === '/api/auth/register' && req.method === 'POST') {
     const data = await parseBody(req);
@@ -505,8 +545,22 @@ const server = http.createServer(async (req, res) => {
   // ===========================================================================
   if (pathname === '/api/webhook/pix' && req.method === 'POST') {
     const body = await parseBody(req);
-    const txid = body.id || body.txid || body.data?.id || body.pix?.txid || `tx_${Date.now()}`;
-    const amount = Number(body.amount) || Number(body.valor) || 47.90;
+    const txid =
+      (Array.isArray(body.pix) ? body.pix[0]?.txid || body.pix[0]?.endToEndId : null) ||
+      body.payment?.externalReference ||
+      body.payment?.pixTransaction ||
+      body.payment?.id ||
+      body.data?.id ||
+      body.id ||
+      body.txid ||
+      `tx_${Date.now()}`;
+    const amount = Number(
+      (Array.isArray(body.pix) ? body.pix[0]?.valor : null) ||
+      body.payment?.value ||
+      body.amount ||
+      body.valor ||
+      47.90
+    );
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
@@ -597,47 +651,8 @@ const server = http.createServer(async (req, res) => {
     });
   }
 
-  // ===========================================================================
-  // 12. Servir Assets Estáticos do SvelteKit (_app/...)
-  // ===========================================================================
-  if (pathname.startsWith('/_app/') || pathname.startsWith('/favicon.')) {
-    const assetPath = path.join(CLIENT_DIR, pathname);
-    if (fs.existsSync(assetPath) && fs.statSync(assetPath).isFile()) {
-      const ext = path.extname(assetPath).toLowerCase();
-      const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-      res.writeHead(200, { 'Content-Type': contentType });
-      return fs.createReadStream(assetPath).pipe(res);
-    }
-  }
-
-  // ===========================================================================
-  // 13. Renderização Dinâmica 100% SvelteKit SSR (Páginas Svelte Componentizadas)
-  // ===========================================================================
-  if (svelteKitApp) {
-    try {
-      const fullUrl = `http://${req.headers.host || 'localhost:3000'}${req.url}`;
-      const webReq = new Request(fullUrl, {
-        method: req.method,
-        headers: req.headers
-      });
-
-      const webRes = await svelteKitApp.respond(webReq, {
-        getClientAddress() {
-          return clientIp;
-        }
-      });
-
-      res.writeHead(webRes.status, Object.fromEntries(webRes.headers.entries()));
-      const bodyText = await webRes.text();
-      return res.end(bodyText);
-    } catch (ssrError) {
-      console.error('[SSR Render Error]:', ssrError);
-    }
-  }
-
   res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-  res.end('Pagina nao encontrada no Puma Bot SvelteKit');
+  res.end('Recurso nao encontrado no Puma Bot');
 });
 
 server.listen(PORT, () => {
