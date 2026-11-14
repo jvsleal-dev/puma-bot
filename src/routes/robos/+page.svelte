@@ -71,7 +71,18 @@
 
   <!-- Bots Grid -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-    {#each data.bots as bot (bot.id)}
+    {#if data.bots.length === 0}
+      <div class="col-span-full py-16 px-6 rounded-xl bg-[#111113] border border-[#222226] text-center space-y-3">
+        <div class="w-12 h-12 mx-auto rounded-xl bg-[#201F22] border border-[#353437] flex items-center justify-center text-[#958DA1]">
+          <span class="material-symbols-outlined text-[24px]">smart_toy</span>
+        </div>
+        <div class="text-sm font-semibold text-white">Nenhum robô cadastrado</div>
+        <p class="text-xs text-[#958DA1] max-w-sm mx-auto">
+          Conecte seu primeiro bot do Telegram clicando no botão "Conectar Novo Robô" acima.
+        </p>
+      </div>
+    {:else}
+      {#each data.bots as bot (bot.id)}
       <div class="bg-[#111113] border border-[#222226] hover:border-[#353437] transition-all rounded-xl p-5 flex flex-col justify-between shadow-sm relative overflow-hidden group">
         <div>
           <!-- Status pill -->
@@ -120,6 +131,7 @@
         </div>
       </div>
     {/each}
+    {/if}
   </div>
 </div>
 

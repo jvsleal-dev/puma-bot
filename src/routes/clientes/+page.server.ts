@@ -5,7 +5,7 @@ export const load: PageServerLoad = async () => {
   try {
     const sales = await prisma.sale.findMany({
       orderBy: { createdAt: 'desc' },
-      take: 50,
+      take: 100,
       include: {
         bot: {
           select: { name: true, username: true }
@@ -13,39 +13,21 @@ export const load: PageServerLoad = async () => {
       }
     });
 
-    const formattedSales = sales.map(s => ({
-      ...s,
-      amount: Number(s.amount),
-      telegramUserId: s.telegramUserId.toString(),
-      createdAt: s.createdAt.toISOString()
+    const formattedSales = sales.map((s: any) => ({
+      id: s.id,
+      botId: s.botId,
+      bot: s.bot ? { name: s.bot.name, username: s.bot.username } : { name: 'Robô VIP' },
+      planName: s.planName || 'Plano VIP',
+      amount: Number(s.amount) || 0,
+      status: s.status,
+      telegramFirstName: s.telegramFirstName || '',
+      telegramUsername: s.telegramUsername || '',
+      telegramUserId: s.telegramUserId ? s.telegramUserId.toString() : '',
+      createdAt: s.createdAt instanceof Date ? s.createdAt.toISOString() : (s.createdAt || new Date().toISOString())
     }));
 
     return { sales: formattedSales };
   } catch (e) {
-    return {
-      sales: [
-        {
-          id: 'tx_884920410',
-          telegramFirstName: 'Lucas Alencar',
-          telegramUsername: 'lucas_trade',
-          bot: { name: 'Puma VIP Alpha' },
-          planName: 'VIP Mensal (Sinais)',
-          amount: 47.90,
-          status: 'PAID',
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: 'tx_884918223',
-          telegramFirstName: 'Rodrigo M.',
-          telegramUsername: 'rodrigo_invest',
-          bot: { name: 'Puma VIP Alpha' },
-          planName: 'Mensal VIP',
-          amount: 47.90,
-          status: 'PENDING',
-          createdAt: new Date().toISOString()
-        }
-      ]
-    };
+    return { sales: [] };
   }
 };
-

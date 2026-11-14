@@ -1,10 +1,17 @@
 <script lang="ts">
   import '../app.css';
   import { page } from '$app/stores';
+  import type { LayoutData } from './$types';
 
-  const navItems = [
+  export let data: LayoutData;
+
+  $: activeBotsBadge = (data?.activeBotsCount ?? 0) > 0
+    ? `${data.activeBotsCount} Ativo${data.activeBotsCount > 1 ? 's' : ''}`
+    : '0 Ativos';
+
+  $: navItems = [
     { title: 'Dashboard', href: '/dashboard', icon: 'dashboard' },
-    { title: 'Meus Robôs', href: '/robos', icon: 'smart_toy', badge: '1 Ativo' },
+    { title: 'Meus Robôs', href: '/robos', icon: 'smart_toy', badge: activeBotsBadge },
     { title: 'Meus Fluxos', href: '/fluxos', icon: 'account_tree' },
     { title: 'Grupos VIP', href: '/grupos', icon: 'shield_person' },
     { title: 'Clientes & Vendas', href: '/clientes', icon: 'point_of_sale' },
@@ -80,11 +87,11 @@
         <div class="p-2 rounded-md bg-[#09090B] border border-[#222226] flex items-center justify-between">
           <div class="flex items-center gap-2 min-w-0">
             <div class="w-7 h-7 rounded bg-[#7C3AED]/20 border border-[#7C3AED]/40 flex items-center justify-center text-white text-[11px] font-bold">
-              OP
+              {(data?.user?.name || 'OP').slice(0, 2).toUpperCase()}
             </div>
             <div class="truncate text-left">
-              <div class="text-[12px] font-semibold text-white truncate">Operador Alpha</div>
-              <div class="text-[10px] text-[#958DA1] font-['JetBrains_Mono'] truncate">Plano Pro Scale</div>
+              <div class="text-[12px] font-semibold text-white truncate">{data?.user?.name || 'Operador Admin'}</div>
+              <div class="text-[10px] text-[#958DA1] font-['JetBrains_Mono'] truncate">{data?.user?.plan || 'PRO Trial'}</div>
             </div>
           </div>
           <a href="/login" class="text-[#958DA1] hover:text-white p-1 transition-colors" title="Sair da Plataforma">

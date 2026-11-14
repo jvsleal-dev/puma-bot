@@ -1,5 +1,5 @@
 // ============================================================================
-// Puma Bot SaaS - API Telemetry & Stats
+// Puma Bot SaaS - API Telemetry & Stats (100% Dynamic from Database)
 // URL: /api/stats
 // ============================================================================
 
@@ -8,8 +8,11 @@ import type { RequestHandler } from './$types';
 import { prisma } from '$lib/server/prisma';
 
 export const GET: RequestHandler = async () => {
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
   try {
-    const [paidSales, totalSales, allSales, activeVips] = await Promise.all([
+    const [paidSales, totalSales, recentSales, activeVips, todayLeads] = await Promise.all([
       prisma.sale.aggregate({
         _sum: { amount: true },
         _count: { id: true },
@@ -22,11 +25,16 @@ export const GET: RequestHandler = async () => {
       }),
       prisma.vipSubscription.count({
         where: { active: true }
+      }),
+      prisma.sale.count({
+        where: {
+          createdAt: { gte: startOfDay }
+        }
       })
     ]);
 
-    const totalApprovedRevenue = Number(paidSales._sum.amount) || 0;
-    const paidCount = paidSales._count.id || 0;
+    const totalApprovedRevenue = Number(paidSales?._sum?.amount) || 0;
+    const paidCount = Number(paidSales?._count?.id) || 0;
     const conversionRate = totalSales > 0 ? ((paidCount / totalSales) * 100).toFixed(1) : '0.0';
 
     return json({
@@ -36,27 +44,26 @@ export const GET: RequestHandler = async () => {
         totalSalesCount: totalSales,
         paidSalesCount: paidCount,
         conversionRate,
-        todayLeads: totalSales,
+        todayLeads,
         activeVips
       },
-      recentTransactions: allSales.map(s => ({
+      recentTransactions: recentSales.map((s: any) => ({
         ...s,
-        amount: Number(s.amount),
-        telegramUserId: s.telegramUserId.toString()
+        amount: Number(s.amount) || 0,
+        telegramUserId: s.telegramUserId ? s.telegramUserId.toString() : '0'
       }))
     });
   } catch (err: any) {
     console.error('[API stats error]:', err);
-    // Retorno seguro caso banco esteja inicializando
     return json({
       success: true,
       stats: {
-        totalApprovedRevenue: 14280.00,
-        totalSalesCount: 456,
-        paidSalesCount: 312,
-        conversionRate: '68.4',
-        todayLeads: 1842,
-        activeVips: 418
+        totalApprovedRevenue: 0,
+        totalSalesCount: 0,
+        paidSalesCount: 0,
+        conversionRate: '0.0',
+        todayLeads: 0,
+        activeVips: 0
       },
       recentTransactions: []
     });

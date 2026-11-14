@@ -1,5 +1,6 @@
 // ============================================================================
-// Prisma Client Singleton with Serverless / Hot-Reload Connection Protection
+// Puma Bot Database Engine - Dynamic Data & Real-Time Persistence
+// Reads and writes directly to database with zero fictitious mock values
 // ============================================================================
 
 import { env } from '$lib/server/config';
@@ -12,85 +13,341 @@ try {
   const prismaPkg = await import('@prisma/client');
   PrismaClientClass = prismaPkg.PrismaClient;
 } catch (e) {
-  // Mock singleton resiliente com leitura do database.json local
-  PrismaClientClass = class MockPrismaClient {
+  PrismaClientClass = class LocalJsonPrismaClient {
     private getDB() {
       try {
         const dbPath = path.resolve('database.json');
         if (fs.existsSync(dbPath)) {
-          return JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+          const data = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+          return {
+            users: data.users || [],
+            bots: data.bots || [],
+            flows: data.flows || [],
+            sales: data.sales || [],
+            vipSubscriptions: data.vipSubscriptions || [],
+            webhookLogs: data.webhookLogs || []
+          };
         }
-      } catch (err) {}
-      return { users: [], bots: [], flows: [], sales: [], vipSubscriptions: [] };
+      } catch (err) {
+        console.error('[Database Engine] Erro ao ler database.json:', err);
+      }
+      return { users: [], bots: [], flows: [], sales: [], vipSubscriptions: [], webhookLogs: [] };
+    }
+
+    private saveDB(db: any) {
+      try {
+        const dbPath = path.resolve('database.json');
+        fs.writeFileSync(dbPath, JSON.stringify(db, null, 2), 'utf8');
+      } catch (err) {
+        console.error('[Database Engine] Erro ao gravar database.json:', err);
+      }
     }
 
     user = {
-      findFirst: async () => this.getDB().users?.[0] || null,
-      findUnique: async ({ where }: any) => this.getDB().users?.find((u: any) => u.id === where?.id || u.email === where?.email) || null,
-      create: async ({ data }: any) => ({ id: 'usr_' + Date.now(), ...data, createdAt: new Date() }),
-      update: async ({ data }: any) => ({ id: 'usr_default', ...data, updatedAt: new Date() })
+      findFirst: async () => {
+        const db = this.getDB();
+        return db.users[0] || null;
+      },
+      findUnique: async ({ where }: any) => {
+        const db = this.getDB();
+        return db.users.find((u: any) => (where?.id && u.id === where.id) || (where?.email && u.email === where.email)) || null;
+      },
+      create: async ({ data }: any) => {
+        const db = this.getDB();
+        const newUser = {
+          id: 'usr_' + Date.now(),
+          ...data,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        db.users.push(newUser);
+        this.saveDB(db);
+        return newUser;
+      },
+      update: async ({ where, data }: any) => {
+        const db = this.getDB();
+        const idx = db.users.findIndex((u: any) => (where?.id && u.id === where.id) || (where?.email && u.email === where.email));
+        if (idx !== -1) {
+          db.users[idx] = { ...db.users[idx], ...data, updatedAt: new Date().toISOString() };
+          this.saveDB(db);
+          return db.users[idx];
+        }
+        return { id: where?.id || 'usr_default', ...data, updatedAt: new Date() };
+      }
     };
 
     bot = {
-      findFirst: async () => this.getDB().bots?.[0] || null,
-      findMany: async () => this.getDB().bots || [],
-      findUnique: async ({ where }: any) => this.getDB().bots?.find((b: any) => b.id === where?.id) || null,
-      create: async ({ data }: any) => ({ id: 'bot_' + Date.now(), ...data, createdAt: new Date() })
+      findFirst: async ({ where }: any = {}) => {
+        const db = this.getDB();
+        if (where?.active !== undefined) {
+          return db.bots.find((b: any) => b.active === where.active) || null;
+        }
+        return db.bots[0] || null;
+      },
+      findMany: async ({ where, include, orderBy }: any = {}) => {
+        const db = this.getDB();
+        let bots = [...db.bots];
+        if (where?.active !== undefined) {
+          bots = bots.filter((b: any) => b.active === where.active);
+        }
+        return bots.map((b: any) => {
+          const botSales = db.sales.filter((s: any) => s.botId === b.id);
+          const botSubs = db.vipSubscriptions.filter((v: any) => v.botId === b.id && v.active);
+          const botFlow = db.flows.find((f: any) => f.botId === b.id);
+          return {
+            ...b,
+            flow: botFlow || null,
+            _count: {
+              sales: botSales.length,
+              vipSubscriptions: botSubs.length
+            }
+          };
+        });
+      },
+      findUnique: async ({ where }: any) => {
+        const db = this.getDB();
+        return db.bots.find((b: any) => (where?.id && b.id === where.id) || (where?.username && b.username === where.username)) || null;
+      },
+      count: async ({ where }: any = {}) => {
+        const db = this.getDB();
+        if (where?.active !== undefined) {
+          return db.bots.filter((b: any) => b.active === where.active).length;
+        }
+        return db.bots.length;
+      },
+      create: async ({ data }: any) => {
+        const db = this.getDB();
+        const newBot = {
+          id: 'bot_' + Date.now(),
+          name: data.name,
+          username: data.username,
+          botToken: data.botToken,
+          webhookSecret: data.webhookSecret || 'sec_' + Date.now(),
+          vipChatId: data.vipChatId,
+          active: data.active !== undefined ? data.active : true,
+          userId: data.userId || db.users[0]?.id || 'usr_default',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        db.bots.push(newBot);
+
+        if (data.flow?.create) {
+          const newFlow = {
+            id: 'flow_' + Date.now(),
+            botId: newBot.id,
+            welcomeMessage: data.flow.create.welcomeMessage || '',
+            mediaType: data.flow.create.mediaType || 'PHOTO',
+            plansJson: data.flow.create.plansJson || [],
+            remarketingMsg: data.flow.create.remarketingMsg || '',
+            downsellPrice: data.flow.create.downsellPrice || 0,
+            updatedAt: new Date().toISOString()
+          };
+          db.flows.push(newFlow);
+        }
+
+        this.saveDB(db);
+        return newBot;
+      },
+      update: async ({ where, data }: any) => {
+        const db = this.getDB();
+        const idx = db.bots.findIndex((b: any) => b.id === where?.id);
+        if (idx !== -1) {
+          db.bots[idx] = { ...db.bots[idx], ...data, updatedAt: new Date().toISOString() };
+          this.saveDB(db);
+          return db.bots[idx];
+        }
+        return { id: where?.id, ...data };
+      }
     };
 
     flow = {
-      findFirst: async () => this.getDB().flows?.[0] || null,
-      findMany: async () => this.getDB().flows || [],
-      findUnique: async ({ where }: any) => this.getDB().flows?.find((f: any) => f.botId === where?.botId) || null,
-      upsert: async ({ create, update }: any) => ({ id: 'flow_' + Date.now(), ...create, ...update, updatedAt: new Date() })
+      findFirst: async () => {
+        const db = this.getDB();
+        return db.flows[0] || null;
+      },
+      findMany: async () => {
+        const db = this.getDB();
+        return db.flows;
+      },
+      findUnique: async ({ where }: any) => {
+        const db = this.getDB();
+        return db.flows.find((f: any) => (where?.botId && f.botId === where.botId) || (where?.id && f.id === where.id)) || null;
+      },
+      upsert: async ({ where, create, update }: any) => {
+        const db = this.getDB();
+        const idx = db.flows.findIndex((f: any) => (where?.botId && f.botId === where.botId) || (where?.id && f.id === where.id));
+        if (idx !== -1) {
+          db.flows[idx] = { ...db.flows[idx], ...update, updatedAt: new Date().toISOString() };
+          this.saveDB(db);
+          return db.flows[idx];
+        }
+        const newFlow = {
+          id: 'flow_' + Date.now(),
+          ...create,
+          updatedAt: new Date().toISOString()
+        };
+        db.flows.push(newFlow);
+        this.saveDB(db);
+        return newFlow;
+      }
     };
 
     sale = {
-      aggregate: async () => {
-        const sales = this.getDB().sales || [];
-        const paid = sales.filter((s: any) => s.status === 'PAID');
-        const sum = paid.reduce((acc: number, curr: any) => acc + (Number(curr.amount) || 0), 0);
+      aggregate: async ({ _sum, where }: any = {}) => {
+        const db = this.getDB();
+        let sales = db.sales;
+        if (where?.status) {
+          sales = sales.filter((s: any) => s.status === where.status);
+        }
+        const sum = sales.reduce((acc: number, curr: any) => acc + (Number(curr.amount) || 0), 0);
         return {
-          _sum: { amount: sum || 29556.38 },
-          _count: { id: paid.length || 312 }
+          _sum: { amount: sum },
+          _count: { id: sales.length }
         };
       },
       count: async ({ where }: any = {}) => {
-        const sales = this.getDB().sales || [];
-        if (where?.status === 'PAID') {
-          return sales.filter((s: any) => s.status === 'PAID').length || 312;
+        const db = this.getDB();
+        let sales = db.sales;
+        if (where?.status) {
+          sales = sales.filter((s: any) => s.status === where.status);
         }
-        return sales.length || 420;
+        if (where?.createdAt?.gte) {
+          const gteDate = new Date(where.createdAt.gte).getTime();
+          sales = sales.filter((s: any) => new Date(s.createdAt).getTime() >= gteDate);
+        }
+        return sales.length;
       },
-      findMany: async () => (this.getDB().sales || []).map((s: any) => ({
-        ...s,
-        telegramUserId: BigInt(s.telegramUserId || '582910482'),
-        createdAt: new Date(s.createdAt || Date.now()),
-        bot: { name: 'Puma VIP Alpha', username: 'PumaVIP_AlphaBot' }
-      })),
-      findUnique: async ({ where }: any) => {
-        const s = this.getDB().sales?.find((item: any) => item.id === where?.id || item.pixTxid === where?.pixTxid);
+      findMany: async ({ where, orderBy, take, include }: any = {}) => {
+        const db = this.getDB();
+        let sales = [...db.sales];
+        if (where?.status) {
+          sales = sales.filter((s: any) => s.status === where.status);
+        }
+        if (where?.botId) {
+          sales = sales.filter((s: any) => s.botId === where.botId);
+        }
+        if (orderBy?.createdAt === 'desc') {
+          sales.sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+        }
+        if (take && typeof take === 'number') {
+          sales = sales.slice(0, take);
+        }
+
+        return sales.map((s: any) => {
+          const bot = db.bots.find((b: any) => b.id === s.botId) || { name: 'Robô VIP', username: 'pumabot' };
+          return {
+            ...s,
+            telegramUserId: BigInt(s.telegramUserId || '0'),
+            createdAt: new Date(s.createdAt || Date.now()),
+            bot: include?.bot ? { name: bot.name, username: bot.username } : undefined
+          };
+        });
+      },
+      findUnique: async ({ where, include }: any) => {
+        const db = this.getDB();
+        const s = db.sales.find((item: any) => (where?.id && item.id === where.id) || (where?.pixTxid && item.pixTxid === where.pixTxid));
         if (!s) return null;
+        const bot = db.bots.find((b: any) => b.id === s.botId) || { botToken: '', vipChatId: '', name: 'Robô VIP' };
         return {
           ...s,
-          telegramUserId: BigInt(s.telegramUserId || '582910482'),
+          telegramUserId: BigInt(s.telegramUserId || '0'),
           createdAt: new Date(s.createdAt || Date.now()),
-          bot: { botToken: 'mock_token', vipChatId: '-10088291039', name: 'Puma VIP Alpha' }
+          bot: include?.bot ? bot : undefined
         };
       },
-      create: async ({ data }: any) => ({ id: 'tx_' + Date.now(), ...data, createdAt: new Date() }),
-      update: async ({ data }: any) => ({ id: 'tx_default', ...data })
+      create: async ({ data }: any) => {
+        const db = this.getDB();
+        const newSale = {
+          id: 'tx_' + Date.now(),
+          ...data,
+          telegramUserId: data.telegramUserId ? data.telegramUserId.toString() : '0',
+          createdAt: new Date().toISOString()
+        };
+        db.sales.unshift(newSale);
+        this.saveDB(db);
+        return {
+          ...newSale,
+          telegramUserId: BigInt(newSale.telegramUserId)
+        };
+      },
+      update: async ({ where, data }: any) => {
+        const db = this.getDB();
+        const idx = db.sales.findIndex((s: any) => (where?.id && s.id === where.id) || (where?.pixTxid && s.pixTxid === where.pixTxid));
+        if (idx !== -1) {
+          db.sales[idx] = { ...db.sales[idx], ...data };
+          this.saveDB(db);
+          return {
+            ...db.sales[idx],
+            telegramUserId: BigInt(db.sales[idx].telegramUserId || '0')
+          };
+        }
+        return { id: where?.id, ...data };
+      }
     };
 
     vipSubscription = {
-      count: async () => this.getDB().vipSubscriptions?.length || 284,
-      findMany: async () => this.getDB().vipSubscriptions || [],
-      create: async ({ data }: any) => ({ id: 'sub_' + Date.now(), ...data, createdAt: new Date() }),
-      update: async ({ data }: any) => ({ id: 'sub_default', ...data })
+      count: async ({ where }: any = {}) => {
+        const db = this.getDB();
+        let subs = db.vipSubscriptions;
+        if (where?.active !== undefined) {
+          subs = subs.filter((v: any) => v.active === where.active);
+        }
+        return subs.length;
+      },
+      findMany: async ({ where, include }: any = {}) => {
+        const db = this.getDB();
+        let subs = [...db.vipSubscriptions];
+        if (where?.active !== undefined) {
+          subs = subs.filter((v: any) => v.active === where.active);
+        }
+        if (where?.expiresAt?.lt) {
+          const ltDate = new Date(where.expiresAt.lt).getTime();
+          subs = subs.filter((v: any) => new Date(v.expiresAt).getTime() < ltDate);
+        }
+        return subs.map((sub: any) => {
+          const bot = db.bots.find((b: any) => b.id === sub.botId);
+          return {
+            ...sub,
+            bot: include?.bot ? bot : undefined
+          };
+        });
+      },
+      create: async ({ data }: any) => {
+        const db = this.getDB();
+        const newSub = {
+          id: 'sub_' + Date.now(),
+          ...data,
+          telegramUserId: data.telegramUserId ? data.telegramUserId.toString() : '0',
+          createdAt: new Date().toISOString()
+        };
+        db.vipSubscriptions.push(newSub);
+        this.saveDB(db);
+        return newSub;
+      },
+      update: async ({ where, data }: any) => {
+        const db = this.getDB();
+        const idx = db.vipSubscriptions.findIndex((v: any) => v.id === where?.id);
+        if (idx !== -1) {
+          db.vipSubscriptions[idx] = { ...db.vipSubscriptions[idx], ...data };
+          this.saveDB(db);
+          return db.vipSubscriptions[idx];
+        }
+        return { id: where?.id, ...data };
+      }
     };
 
     webhookLog = {
-      create: async ({ data }: any) => ({ id: 'log_' + Date.now(), ...data })
+      create: async ({ data }: any) => {
+        const db = this.getDB();
+        const newLog = {
+          id: 'log_' + Date.now(),
+          ...data,
+          createdAt: new Date().toISOString()
+        };
+        db.webhookLogs.push(newLog);
+        this.saveDB(db);
+        return newLog;
+      }
     };
 
     $transaction = async (fn: any) => fn(this);

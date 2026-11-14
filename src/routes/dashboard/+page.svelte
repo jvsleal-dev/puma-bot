@@ -75,8 +75,8 @@
         R$ {formatCurrency(stats.totalRevenue)}
       </div>
       <div class="flex items-center gap-1.5 mt-2 text-[11px] font-medium text-[#10B981]">
-        <span class="material-symbols-outlined text-[14px]">trending_up</span>
-        <span>+28.4% vs semana anterior</span>
+        <span class="material-symbols-outlined text-[14px]">payments</span>
+        <span>{stats.paidPix} liquidações confirmadas</span>
       </div>
     </div>
 
@@ -151,9 +151,16 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-[#222226]/60 text-[13px]">
-          {#each transactions as tx}
-            {@const badge = getStatusBadge(tx.status)}
-            <tr class="h-12 hover:bg-[#141416] transition-colors">
+          {#if transactions.length === 0}
+            <tr>
+              <td colspan="6" class="px-5 py-12 text-center text-xs text-[#958DA1]">
+                Nenhuma transação registrada no banco de dados até o momento.
+              </td>
+            </tr>
+          {:else}
+            {#each transactions as tx}
+              {@const badge = getStatusBadge(tx.status)}
+              <tr class="h-12 hover:bg-[#141416] transition-colors">
               <!-- Lead Name & Username -->
               <td class="px-5">
                 <div class="flex items-center gap-2.5">
@@ -201,6 +208,7 @@
               </td>
             </tr>
           {/each}
+          {/if}
         </tbody>
       </table>
     </div>

@@ -7,8 +7,11 @@
       "password": "senha123456",
       "createdAt": "2026-11-14T14:45:47.191Z",
       "plan": "PRO Trial (14 dias)",
+      "gatewayProvider": "PUSHINPAY",
+      "gatewayToken": "",
+      "pixKey": "financeiro@pumabot.com.br",
       "stats": {
-        "totalVendas": 0,
+        "totalVendas": 3,
         "pedidosPendentes": 0,
         "botsAtivos": 1
       }
@@ -43,10 +46,20 @@
       "id": "bot_alpha_01",
       "name": "Puma VIP Sinais Alpha",
       "username": "PumaVIP_AlphaBot",
-      "botToken": "mock_token_dev",
+      "botToken": "7182948291:AAH9bK8d_j29LmQ09aBv8x7P12-xX9",
+      "webhookSecret": "puma_secret_token_change_in_production_32chars",
       "vipChatId": "-10088291039",
-      "active": true,
-      "plans": [
+      "active": true
+    }
+  ],
+  "flows": [
+    {
+      "id": "flow_alpha_01",
+      "botId": "bot_alpha_01",
+      "welcomeMessage": "Olá! Bem-vindo à nossa comunidade VIP exclusiva. Escolha seu plano abaixo para liberar o acesso imediato via PIX:",
+      "mediaUrl": "",
+      "mediaType": "PHOTO",
+      "plansJson": [
         {
           "id": "plan_1",
           "title": "Mensal VIP",
@@ -65,7 +78,10 @@
           "price": 297,
           "durationDays": 365
         }
-      ]
+      ],
+      "remarketingMsg": "Notamos que seu PIX ainda não foi liquidado. Restam apenas 10 minutos para garantir sua vaga.",
+      "downsellPrice": 37.0,
+      "updatedAt": "2026-11-14T17:00:00.000Z"
     }
   ],
   "sales": [
@@ -92,6 +108,7 @@
       "amount": 47.9,
       "pixTxid": "tx_884920410",
       "status": "PAID",
+      "paidAt": "2026-11-14T17:10:24.512Z",
       "createdAt": "2026-11-14T17:10:24.512Z"
     },
     {
@@ -104,8 +121,33 @@
       "amount": 147,
       "pixTxid": "tx_884919871",
       "status": "PAID",
+      "paidAt": "2026-11-14T16:58:24.520Z",
       "createdAt": "2026-11-14T16:58:24.520Z"
     }
   ],
-  "vipSubscriptions": []
+  "vipSubscriptions": [
+    {
+      "id": "sub_884920410",
+      "saleId": "tx_884920410",
+      "botId": "bot_alpha_01",
+      "telegramUserId": "582910482",
+      "chatId": "-10088291039",
+      "inviteLink": "https://t.me/+join_alpha_vip_8849",
+      "expiresAt": "2026-12-14T17:10:24.512Z",
+      "active": true,
+      "createdAt": "2026-11-14T17:10:24.512Z"
+    },
+    {
+      "id": "sub_884919871",
+      "saleId": "tx_884919871",
+      "botId": "bot_alpha_01",
+      "telegramUserId": "918274019",
+      "chatId": "-10088291039",
+      "inviteLink": "https://t.me/+join_alpha_vip_9182",
+      "expiresAt": "2027-02-14T16:58:24.520Z",
+      "active": true,
+      "createdAt": "2026-11-14T16:58:24.520Z"
+    }
+  ],
+  "webhookLogs": []
 }

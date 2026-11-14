@@ -1,5 +1,6 @@
 // ============================================================================
-// Dashboard Server Loader - Parallelized PostgreSQL Aggregations
+// Dashboard Server Loader - Real Dynamic Data from Database
+// Zero fictitious data: all KPIs and lists calculated strictly from DB
 // ============================================================================
 
 import type { PageServerLoad } from './$types';
@@ -10,9 +11,6 @@ export const load: PageServerLoad = async () => {
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   try {
-    // -------------------------------------------------------------------------
-    // Execução Paralela de Consultas via Promise.all
-    // -------------------------------------------------------------------------
     const [
       paidSalesTotal,
       totalSalesCount,
@@ -22,33 +20,33 @@ export const load: PageServerLoad = async () => {
       recentSales,
       activeBots
     ] = await Promise.all([
-      // 1. Faturamento Total Aprovado (Soma de amount onde status = PAID)
+      // 1. Faturamento Total Aprovado (Soma real de amount onde status = PAID)
       prisma.sale.aggregate({
         _sum: { amount: true },
         where: { status: 'PAID' }
-      }).catch(() => ({ _sum: { amount: 29556.38 } })),
+      }).catch(() => ({ _sum: { amount: 0 } })),
 
       // 2. Total de PIX Gerados
-      prisma.sale.count().catch(() => 420),
+      prisma.sale.count().catch(() => 0),
 
       // 3. Total de PIX Pagos
       prisma.sale.count({
         where: { status: 'PAID' }
-      }).catch(() => 312),
+      }).catch(() => 0),
 
-      // 4. Novos Leads Hoje (/start hoje)
+      // 4. Novos Leads Hoje
       prisma.sale.count({
         where: {
           createdAt: { gte: startOfDay }
         }
-      }).catch(() => 84),
+      }).catch(() => 0),
 
       // 5. Assinantes VIP Ativos
       prisma.vipSubscription.count({
         where: { active: true }
-      }).catch(() => 284),
+      }).catch(() => 0),
 
-      // 6. Últimas 15 Transações PIX em Tempo Real
+      // 6. Últimas 15 Transações PIX em Tempo Real (Direto do banco de dados)
       prisma.sale.findMany({
         take: 15,
         orderBy: { createdAt: 'desc' },
@@ -63,88 +61,25 @@ export const load: PageServerLoad = async () => {
       prisma.bot.findMany({
         where: { active: true },
         select: { id: true, name: true, username: true }
-      }).catch(() => [
-        { id: 'bot-1', name: 'Puma VIP Sinais Alpha', username: 'PumaVIP_AlphaBot' }
-      ])
+      }).catch(() => [])
     ]);
 
-    const totalRevenue = Number(paidSalesTotal?._sum?.amount || 29556.38);
-    const totalPix = Number(totalSalesCount || 420);
-    const paidPix = Number(paidSalesCount || 312);
-    const conversionRate = totalPix > 0 ? ((paidPix / totalPix) * 100).toFixed(1) : '74.2';
+    const totalRevenue = Number(paidSalesTotal?._sum?.amount) || 0;
+    const totalPix = Number(totalSalesCount) || 0;
+    const paidPix = Number(paidSalesCount) || 0;
+    const conversionRate = totalPix > 0 ? ((paidPix / totalPix) * 100).toFixed(1) : '0.0';
 
-    // Mock realista caso o banco esteja recém-criado sem transações
-    const fallbackTransactions = [
-      {
-        id: 'tx_884920410',
-        telegramFirstName: 'Lucas Alencar',
-        telegramUsername: 'lucas_trade',
-        bot: { name: 'Puma VIP Alpha' },
-        planName: 'VIP Mensal (Sinais)',
-        amount: 47.90,
-        status: 'PAID',
-        createdAt: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
-        pixTxid: 'tx_884920410'
-      },
-      {
-        id: 'tx_884919871',
-        telegramFirstName: 'Mariana Silveira',
-        telegramUsername: 'mari_crypto',
-        bot: { name: 'Puma VIP Alpha' },
-        planName: 'Trimestral Vitalício',
-        amount: 147.00,
-        status: 'PAID',
-        createdAt: new Date(Date.now() - 14 * 60 * 1000).toISOString(),
-        pixTxid: 'tx_884919871'
-      },
-      {
-        id: 'tx_884918230',
-        telegramFirstName: 'Felipe Santana',
-        telegramUsername: 'felipe_fx',
-        bot: { name: 'Puma VIP Alpha' },
-        planName: 'VIP Mensal (Sinais)',
-        amount: 47.90,
-        status: 'PENDING',
-        createdAt: new Date(Date.now() - 22 * 60 * 1000).toISOString(),
-        pixTxid: 'tx_884918230'
-      },
-      {
-        id: 'tx_884917552',
-        telegramFirstName: 'Rodrigo Nogueira',
-        telegramUsername: 'rodrigo_ops',
-        bot: { name: 'Puma VIP Alpha' },
-        planName: 'Anual Premium',
-        amount: 297.00,
-        status: 'PAID',
-        createdAt: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-        pixTxid: 'tx_884917552'
-      },
-      {
-        id: 'tx_884916401',
-        telegramFirstName: 'Camila Torres',
-        telegramUsername: 'camila_mkt',
-        bot: { name: 'Puma VIP Alpha' },
-        planName: 'VIP Mensal (Sinais)',
-        amount: 47.90,
-        status: 'EXPIRED',
-        createdAt: new Date(Date.now() - 120 * 60 * 1000).toISOString(),
-        pixTxid: 'tx_884916401'
-      }
-    ];
-
-    const transactions = recentSales && recentSales.length > 0
-      ? recentSales.map((s: any) => ({
-          id: s.id,
-          telegramFirstName: s.telegramFirstName,
-          telegramUsername: s.telegramUsername,
-          bot: s.bot,
-          planName: s.planName,
-          amount: Number(s.amount),
-          status: s.status,
-          createdAt: s.createdAt.toISOString ? s.createdAt.toISOString() : s.createdAt,
-          pixTxid: s.pixTxid
-        }))
-      : fallbackTransactions;
+    const finalTransactions = recentSales.map(s => ({
+      id: s.id,
+      telegramFirstName: s.telegramFirstName || 'Lead Telegram',
+      telegramUsername: s.telegramUsername || 'anônimo',
+      bot: { name: s.bot?.name || 'Robô VIP' },
+      planName: s.planName || 'Plano VIP',
+      amount: Number(s.amount) || 0,
+      status: s.status,
+      createdAt: s.createdAt instanceof Date ? s.createdAt.toISOString() : (s.createdAt || new Date().toISOString()),
+      pixTxid: s.pixTxid || s.id
+    }));
 
     return {
       stats: {
@@ -152,26 +87,24 @@ export const load: PageServerLoad = async () => {
         totalPix,
         paidPix,
         conversionRate,
-        todayLeads: todayLeadsCount || 84,
-        activeVip: activeVipCount || 284
+        todayLeads: Number(todayLeadsCount) || 0,
+        activeVip: Number(activeVipCount) || 0
       },
-      transactions,
+      transactions: finalTransactions,
       activeBots
     };
   } catch (error) {
-    console.error('[Dashboard Load Error]:', error);
     return {
       stats: {
-        totalRevenue: 29556.38,
-        totalPix: 420,
-        paidPix: 312,
-        conversionRate: '74.2',
-        todayLeads: 84,
-        activeVip: 284
+        totalRevenue: 0,
+        totalPix: 0,
+        paidPix: 0,
+        conversionRate: '0.0',
+        todayLeads: 0,
+        activeVip: 0
       },
       transactions: [],
       activeBots: []
     };
   }
 };
-

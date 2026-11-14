@@ -7,15 +7,14 @@ export const load: PageServerLoad = async () => {
 
     return {
       provider: user?.gatewayProvider || 'PUSHINPAY',
-      maskedToken: user?.gatewayToken ? `${user.gatewayToken.slice(0, 8)}...${user.gatewayToken.slice(-4)}` : 'pushin_sec_9948...284',
-      pixKey: user?.pixKey || 'financeiro@pumabot.com.br'
+      maskedToken: user?.gatewayToken ? `${user.gatewayToken.slice(0, 6)}...${user.gatewayToken.slice(-4)}` : '',
+      pixKey: user?.pixKey || ''
     };
   } catch (e) {
     return {
       provider: 'PUSHINPAY',
-      maskedToken: 'pushin_sec_9948...284',
-      pixKey: 'financeiro@pumabot.com.br'
+      maskedToken: '',
+      pixKey: ''
     };
   }
 };
-

@@ -123,79 +123,13 @@ function sanitizeInput(str) {
 const DB_FILE = path.join(__dirname, 'database.json');
 let db = {
   users: [],
-  bots: [
-    {
-      id: 'bot_alpha_01',
-      userId: 'usr_default',
-      name: 'Puma VIP Sinais Alpha',
-      username: 'PumaVIP_AlphaBot',
-      botToken: '7182948291:AAH9bK8d_j29LmQ09aBv8x7P12-xX9',
-      webhookSecret: 'puma_secret_token_change_in_production_32chars',
-      vipChatId: '-10088291039',
-      active: true,
-      plans: [
-        { id: 'plan_1', title: 'Mensal VIP', price: 47.90, durationDays: 30 },
-        { id: 'plan_2', title: 'Trimestral VIP', price: 119.90, durationDays: 90 },
-        { id: 'plan_3', title: 'Vitalicio Anual', price: 297.00, durationDays: 365 }
-      ]
-    }
-  ],
-  flows: [
-    {
-      id: 'flow_alpha_01',
-      botId: 'bot_alpha_01',
-      welcomeMessage: 'Ola! Bem-vindo a comunidade VIP de alta precisao. Escolha seu plano abaixo para liberar o acesso instantaneo via PIX:',
-      mediaUrl: '',
-      mediaType: 'photo',
-      remarketingMsg: 'Notamos que seu PIX ainda nao foi liquidado. Restam apenas 10 minutos para garantir sua vaga.',
-      downsellPrice: 37.00,
-      updatedAt: new Date().toISOString()
-    }
-  ],
-  sales: [
-    {
-      id: 'tx_884920410',
-      botId: 'bot_alpha_01',
-      telegramUserId: '582910482',
-      telegramUsername: 'lucas_trade',
-      telegramFirstName: 'Lucas Alencar',
-      planName: 'VIP Mensal (Sinais)',
-      amount: 47.90,
-      pixTxid: 'tx_884920410',
-      status: 'PAID',
-      paidAt: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
-      createdAt: new Date(Date.now() - 2 * 60 * 1000).toISOString()
-    },
-    {
-      id: 'tx_884919871',
-      botId: 'bot_alpha_01',
-      telegramUserId: '918274019',
-      telegramUsername: 'mari_crypto',
-      telegramFirstName: 'Mariana Silveira',
-      planName: 'Trimestral Vitalicio',
-      amount: 147.00,
-      pixTxid: 'tx_884919871',
-      status: 'PAID',
-      paidAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-      createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString()
-    },
-    {
-      id: 'tx_884918223',
-      botId: 'bot_alpha_01',
-      telegramUserId: '482019482',
-      telegramUsername: 'rodrigo_invest',
-      telegramFirstName: 'Rodrigo M.',
-      planName: 'Mensal VIP',
-      amount: 47.90,
-      pixTxid: 'tx_884918223',
-      status: 'PENDING',
-      createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString()
-    }
-  ],
+  bots: [],
+  flows: [],
+  sales: [],
   gateways: {
     provider: 'PUSHINPAY',
-    token: 'pushin_sec_994829184910284019284019284',
-    pixKey: 'financeiro@pumabot.com.br',
+    token: '',
+    pixKey: '',
     updatedAt: new Date().toISOString()
   },
   vipSubscriptions: []
@@ -205,11 +139,11 @@ if (fs.existsSync(DB_FILE)) {
   try {
     const loaded = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
     db.users = loaded.users || [];
-    if (loaded.bots?.length) db.bots = loaded.bots;
-    if (loaded.flows?.length) db.flows = loaded.flows;
-    if (loaded.sales?.length) db.sales = loaded.sales;
-    if (loaded.gateways) db.gateways = loaded.gateways;
-    if (loaded.vipSubscriptions?.length) db.vipSubscriptions = loaded.vipSubscriptions;
+    db.bots = loaded.bots || [];
+    db.flows = loaded.flows || [];
+    db.sales = loaded.sales || [];
+    db.gateways = loaded.gateways || { provider: 'PUSHINPAY', token: '', pixKey: '' };
+    db.vipSubscriptions = loaded.vipSubscriptions || [];
   } catch (e) {
     console.error('Erro ao carregar banco:', e);
   }
