@@ -8,8 +8,22 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const PORT = process.env.PORT || 3000;
-const PUBLIC_DIR = path.join(__dirname, 'public');
+const CLIENT_DIR = path.join(__dirname, '.svelte-kit', 'output', 'client');
 const JWT_SECRET = process.env.JWT_SECRET || 'puma_bot_jwt_super_secret_high_entropy_key_512bits';
+
+// =============================================================================
+// Initialize SvelteKit SSR Server Engine
+// =============================================================================
+let svelteKitApp = null;
+try {
+  const { Server } = await import('./.svelte-kit/output/server/index.js');
+  const { manifest } = await import('./.svelte-kit/output/server/manifest.js');
+  svelteKitApp = new Server(manifest);
+  await svelteKitApp.init({ env: process.env });
+  console.log('[SvelteKit] Motor SSR 100% carregado e inicializado com sucesso.');
+} catch (err) {
+  console.warn('[SvelteKit] SSR bundle nao encontrado. Execute npm run build para compilar.', err.message);
+}
 
 // =============================================================================
 // Security Functions: PBKDF2 Hashing, Constant-Time Comparison, JWT, Rate Limit
@@ -101,14 +115,6 @@ function checkRateLimit(ip, maxRequests = 60, windowSeconds = 60) {
 function sanitizeInput(str) {
   if (typeof str !== 'string') return '';
   return str.replace(/[<>]/g, '').trim();
-}
-
-// Helper: Extrair usuário autenticado via Bearer Token
-function getAuthUser(req) {
-  const auth = req.headers['authorization'];
-  if (!auth || !auth.startsWith('Bearer ')) return null;
-  const token = auth.substring(7);
-  return verifyToken(token);
 }
 
 // =============================================================================
@@ -223,14 +229,15 @@ const MIME_TYPES = {
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.svg': 'image/svg+xml',
-  '.ico': 'image/x-icon'
+  '.ico': 'image/x-icon',
+  '.woff2': 'font/woff2'
 };
 
 function parseBody(req) {
   return new Promise((resolve, reject) => {
     let body = '';
     let bytes = 0;
-    const MAX_BODY_SIZE = 1024 * 1024; // Protecao contra DoS: max 1MB
+    const MAX_BODY_SIZE = 1024 * 1024;
 
     req.on('data', chunk => {
       bytes += chunk.length;
@@ -431,7 +438,6 @@ const server = http.createServer(async (req, res) => {
 
     db.bots.push(newBot);
 
-    // Cria funil padrao
     db.flows.push({
       id: 'flow_' + newBot.id,
       botId: newBot.id,
@@ -494,9 +500,7 @@ const server = http.createServer(async (req, res) => {
 
     if (plans && Array.isArray(plans)) {
       const bot = db.bots.find(b => b.id === targetBotId);
-      if (bot) {
-        bot.plans = plans;
-      }
+      if (bot) bot.plans = plans;
     }
 
     saveDB();
@@ -599,7 +603,6 @@ const server = http.createServer(async (req, res) => {
         sale.paidAt = new Date().toISOString();
       }
 
-      // Adiciona na lista de assinantes VIP ativos
       db.vipSubscriptions.push({
         id: 'sub_' + Date.now(),
         saleId: sale.id,
@@ -625,12 +628,9 @@ const server = http.createServer(async (req, res) => {
     const secretHeader = req.headers['x-telegram-bot-api-secret-token'];
     const bot = db.bots.find(b => b.id === botId);
 
-    // Validacao estrita do Secret Token se configurado
     if (bot && bot.webhookSecret && secretHeader && bot.webhookSecret !== secretHeader) {
       return sendJson(res, 403, { error: 'Invalid secret token' });
     }
-
-    const body = await parseBody(req);
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
@@ -664,60 +664,51 @@ const server = http.createServer(async (req, res) => {
   }
 
   // ===========================================================================
-  // 12. Servir Arquivos Estaticos com Protecao Path Traversal
+  // 12. Servir Assets Estáticos do SvelteKit (_app/...)
   // ===========================================================================
-  let targetFile = pathname;
-  if (targetFile === '/' || targetFile === '') {
-    targetFile = '/index.html';
-  } else if (targetFile === '/cadastro') {
-    targetFile = '/cadastro.html';
-  } else if (targetFile === '/login') {
-    targetFile = '/login.html';
-  } else if (targetFile === '/dashboard') {
-    targetFile = '/dashboard.html';
-  } else if (targetFile === '/robos') {
-    targetFile = '/robos.html';
-  } else if (targetFile === '/fluxos') {
-    targetFile = '/fluxos.html';
-  } else if (targetFile === '/clientes') {
-    targetFile = '/clientes.html';
-  } else if (targetFile === '/gateways') {
-    targetFile = '/gateways.html';
-  }
-
-  let filePath = path.join(PUBLIC_DIR, targetFile);
-
-  // Protecao contra Path Traversal (ex: ../../etc/passwd)
-  const relative = path.relative(PUBLIC_DIR, filePath);
-  if (relative.startsWith('..') || path.isAbsolute(relative)) {
-    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
-    return res.end('Access denied');
-  }
-
-  if (!path.extname(filePath)) {
-    if (fs.existsSync(filePath + '.html')) {
-      filePath += '.html';
+  if (pathname.startsWith('/_app/') || pathname.startsWith('/favicon.')) {
+    const assetPath = path.join(CLIENT_DIR, pathname);
+    if (fs.existsSync(assetPath) && fs.statSync(assetPath).isFile()) {
+      const ext = path.extname(assetPath).toLowerCase();
+      const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      res.writeHead(200, { 'Content-Type': contentType });
+      return fs.createReadStream(assetPath).pipe(res);
     }
   }
 
-  fs.stat(filePath, (err, stats) => {
-    if (err || !stats.isFile()) {
-      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-      res.end('Pagina nao encontrada no Puma Bot');
-      return;
+  // ===========================================================================
+  // 13. Renderização Dinâmica 100% SvelteKit SSR (Páginas Svelte Componentizadas)
+  // ===========================================================================
+  if (svelteKitApp) {
+    try {
+      const fullUrl = `http://${req.headers.host || 'localhost:3000'}${req.url}`;
+      const webReq = new Request(fullUrl, {
+        method: req.method,
+        headers: req.headers
+      });
+
+      const webRes = await svelteKitApp.respond(webReq, {
+        getClientAddress() {
+          return clientIp;
+        }
+      });
+
+      res.writeHead(webRes.status, Object.fromEntries(webRes.headers.entries()));
+      const bodyText = await webRes.text();
+      return res.end(bodyText);
+    } catch (ssrError) {
+      console.error('[SSR Render Error]:', ssrError);
     }
+  }
 
-    const ext = path.extname(filePath).toLowerCase();
-    const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-
-    res.writeHead(200, { 'Content-Type': contentType });
-    fs.createReadStream(filePath).pipe(res);
-  });
+  res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+  res.end('Pagina nao encontrada no Puma Bot SvelteKit');
 });
 
 server.listen(PORT, () => {
   console.log(`\n=============================================================`);
-  console.log(` Puma Bot SaaS Hardened Security rodando em: http://localhost:${PORT}`);
-  console.log(` Headers OWASP, PBKDF2 Hashing, JWT e Rate Limit Ativados`);
+  console.log(` Puma Bot SaaS 100% SvelteKit SSR rodando em: http://localhost:${PORT}`);
+  console.log(` Componentes Svelte reativos, Zero Emojis, OWASP Hardened`);
   console.log(`=============================================================\n`);
 });

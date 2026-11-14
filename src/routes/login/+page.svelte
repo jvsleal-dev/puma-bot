@@ -1,3 +1,44 @@
+<script lang="ts">
+  import { onMount } from 'svelte';
+
+  let email = '';
+  let password = '';
+  let showPassword = false;
+  let loading = false;
+  let errorMessage = '';
+
+  async function handleLogin() {
+    if (!email || !password) {
+      errorMessage = 'Informe o e-mail e a senha de operador.';
+      return;
+    }
+
+    loading = true;
+    errorMessage = '';
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        localStorage.setItem('puma_token', data.token);
+        localStorage.setItem('puma_user', JSON.stringify(data.user));
+        window.location.href = '/dashboard';
+      } else {
+        errorMessage = data.error || 'Credenciais inválidas. Verifique seu e-mail e senha.';
+      }
+    } catch (e) {
+      errorMessage = 'Falha de comunicação com o servidor de autenticação.';
+    } finally {
+      loading = false;
+    }
+  }
+</script>
+
 <svelte:head>
  <title>Puma Bot — Login de Operadores</title>
 </svelte:head>
@@ -253,78 +294,3 @@
 </div>
 </footer>
 <!-- Light interactive script for password toggle and visual polish -->
-<script>
- document.addEventListener('DOMContentLoaded', () => {
- const toggleBtn = document.getElementById('togglePassword');
- const passwordInput = document.getElementById('password');
- const eyeIcon = document.getElementById('eyeIcon');
-
- if (toggleBtn && passwordInput && eyeIcon) {
- toggleBtn.addEventListener('click', () => {
- const isPassword = passwordInput.getAttribute('type') === 'password';
- passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
- eyeIcon.innerText = isPassword ? 'visibility_off' : 'visibility';
- });
- }
- });
- </script>
-
-<script>
- document.addEventListener('DOMContentLoaded', () => {
- const form = document.getElementById('login-form') || document.querySelector('form');
- const alertBox = document.getElementById('login-alert');
-
- // Checar se veio redirecionado do cadastro
- const params = new URLSearchParams(window.location.search);
- if (params.get('registered')) {
- showAlert('Conta criada com sucesso! Faça seu login para continuar.', 'success');
- }
-
- if (form) {
- form.addEventListener('submit', async (e) => {
- e.preventDefault();
- const email = (document.getElementById('email') || {}).value;
- const password = (document.getElementById('password') || {}).value;
-
- const submitBtn = form.querySelector('button[type="submit"]');
- const originalText = submitBtn.innerHTML;
- submitBtn.disabled = true;
- submitBtn.innerText = 'Autenticando...';
-
- try {
- const res = await fetch('/api/auth/login', {
- method: 'POST',
- headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({ email, password })
- });
- const data = await res.json();
-
- if (!res.ok) {
- throw new Error(data.error || 'Credenciais inválidas');
- }
-
- localStorage.setItem('puma_user', JSON.stringify(data.user));
- localStorage.setItem('puma_token', data.token);
-
- showAlert(' Login efetuado com sucesso! Redirecionando...', 'success');
- setTimeout(() => {
- window.location.href = '/';
- }, 1200);
- } catch (err) {
- showAlert(err.message, 'error');
- submitBtn.disabled = false;
- submitBtn.innerHTML = originalText;
- }
- });
- }
-
- function showAlert(msg, type) {
- if (!alertBox) return alert(msg);
- alertBox.className = type === 'error' 
- ? 'p-3 rounded-lg text-sm mb-4 bg-red-950/80 border border-red-500/50 text-red-200 block'
- : 'p-3 rounded-lg text-sm mb-4 bg-emerald-950/80 border border-emerald-500/50 text-emerald-200 block';
- alertBox.innerText = msg;
- }
- });
-</script>
-

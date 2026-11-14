@@ -1,3 +1,51 @@
+<script lang="ts">
+  import { onMount } from 'svelte';
+
+  let faturamento = 50000;
+  let isDemoModalOpen = false;
+
+  $: avgTicket = 97;
+  $: salesCount = Math.round(faturamento / avgTicket);
+  $: legacyCost = (faturamento * 0.079) + (salesCount * 1.00);
+  $: pumaCost = salesCount * 0.50;
+  $: monthlySavings = Math.max(0, legacyCost - pumaCost);
+  $: annualSavings = monthlySavings * 12;
+
+  function formatBrl(val: number) {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0);
+  }
+
+  onMount(() => {
+    // FAQ Accordions
+    document.querySelectorAll('.faq-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const content = btn.nextElementSibling;
+        const icon = btn.querySelector('.material-symbols-outlined');
+        if (!content) return;
+        const isHidden = content.classList.contains('hidden');
+
+        document.querySelectorAll('.faq-content').forEach(c => c.classList.add('hidden'));
+        document.querySelectorAll('.faq-toggle .material-symbols-outlined').forEach((i: any) => i.style.transform = 'rotate(0deg)');
+
+        if (isHidden) {
+          content.classList.remove('hidden');
+          if (icon) (icon as HTMLElement).style.transform = 'rotate(180deg)';
+        }
+      });
+    });
+
+    // Keyboard shortcut K
+    function handleKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        isDemoModalOpen = !isDemoModalOpen;
+      }
+    }
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  });
+</script>
+
 <svelte:head>
  <title>Puma Bot — Gateway PIX & Automação de Alta Conversão no Telegram</title>
 </svelte:head>
@@ -744,79 +792,9 @@
 </div>
 </footer>
 <!-- Vanilla JS for Interactive Profit Calculator & FAQ Toggles -->
-<script>
- // Interactive Profit Simulator Logic
- const range = document.getElementById('faturamentoRange');
- const faturamentoDisplay = document.getElementById('faturamentoDisplay');
- const custoTradicional = document.getElementById('custoTradicional');
- const custoPuma = document.getElementById('custoPuma');
- const economiaAnual = document.getElementById('economiaAnual');
 
- function updateCalculator() {
- const revenue = parseFloat(range.value);
- faturamentoDisplay.textContent = 'R$ ' + revenue.toLocaleString('pt-BR');
 
- // Estimate average ticket around R$ 97
- const avgTicket = 97;
- const salesCount = Math.round(revenue / avgTicket);
 
- // Traditional Platforms: 7.9% + R$ 1.00 per transaction
- const legacyCost = (revenue * 0.079) + (salesCount * 1.00);
-
- // Puma Bot: strictly R$ 0.50 per approved PIX
- const pumaCost = salesCount * 0.50;
-
- const monthlySavings = Math.max(0, legacyCost - pumaCost);
- const annualSavings = monthlySavings * 12;
-
- custoTradicional.textContent = 'R$ ' + legacyCost.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
- custoPuma.textContent = 'R$ ' + pumaCost.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
- economiaAnual.textContent = 'R$ ' + annualSavings.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
- }
-
- if (range) {
- range.addEventListener('input', updateCalculator);
- updateCalculator();
- }
-
- // FAQ Accordion Interaction
- document.querySelectorAll('.faq-toggle').forEach(button => {
- button.addEventListener('click', () => {
- const content = button.nextElementSibling;
- const icon = button.querySelector('.material-symbols-outlined');
- const isHidden = content.classList.contains('hidden');
-
- // Close all
- document.querySelectorAll('.faq-content').forEach(c => c.classList.add('hidden'));
- document.querySelectorAll('.faq-toggle .material-symbols-outlined').forEach(i => i.style.transform = 'rotate(0deg)');
-
- if (isHidden) {
- content.classList.remove('hidden');
- icon.style.transform = 'rotate(180deg)';
- }
- });
- });
- </script>
-
-<script>
- // FAQ Accordion Logic
- document.querySelectorAll('.faq-toggle').forEach(btn => {
- btn.addEventListener('click', () => {
- const content = btn.nextElementSibling;
- const icon = btn.querySelector('.material-symbols-outlined');
- const isHidden = content.classList.contains('hidden');
- 
- // Fechar outros
- document.querySelectorAll('.faq-content').forEach(c => c.classList.add('hidden'));
- document.querySelectorAll('.faq-toggle .material-symbols-outlined').forEach(i => i.style.transform = 'rotate(0deg)');
-
- if (isHidden) {
- content.classList.remove('hidden');
- if (icon) icon.style.transform = 'rotate(180deg)';
- }
- });
- });
-</script>
 
 
 <!-- Notificação Toast Flutuante em Tempo Real -->
@@ -872,105 +850,3 @@
  </div>
  </div>
 </div>
-
-
-<script>
- // Dynamic Live Feed & Toast Simulation
- const mockUsers = [
- { name: '@felipe_crypto', val: 'R$ 147,00', canal: 'VIP Sinais Alpha' },
- { name: '@marina_vendas', val: 'R$ 49,90', canal: 'Grupo Mentoria PRO' },
- { name: '@rodrigo_fx', val: 'R$ 197,00', canal: 'Sala de Operações' },
- { name: '@camila_dropship', val: 'R$ 97,00', canal: 'Comunidade VIP' },
- { name: '@lucas_trader', val: 'R$ 49,90', canal: 'Canal de Análises' }
- ];
-
- function showToast(title, value, desc) {
- const toast = document.getElementById('live-pix-toast');
- if (!toast) return;
- document.getElementById('toast-title').textContent = title;
- document.getElementById('toast-value').textContent = value;
- document.getElementById('toast-desc').textContent = desc;
-
- toast.classList.remove('translate-y-32', 'opacity-0');
- toast.classList.add('translate-y-0', 'opacity-100');
-
- setTimeout(() => {
- toast.classList.remove('translate-y-0', 'opacity-100');
- toast.classList.add('translate-y-32', 'opacity-0');
- }, 4500);
- }
-
- function simulatePixPayment() {
- const randomUser = mockUsers[Math.floor(Math.random() * mockUsers.length)];
- const container = document.getElementById('live-transactions-container');
-
- if (container) {
- const newItem = document.createElement('div');
- newItem.className = 'p-2.5 rounded-lg bg-surface-container-low border border-secondary/40 flex items-center justify-between transition-all duration-300 animate-pulse';
- newItem.innerHTML = `
- <div class="flex items-center gap-2.5">
- <div class="w-7 h-7 rounded-lg bg-secondary/15 flex items-center justify-center text-secondary">
- <span class="material-symbols-outlined text-[16px]">check_circle</span>
- </div>
- <div>
- <div class="text-body-sm font-semibold text-on-surface">Venda aprovada • ${randomUser.val}</div>
- <div class="text-[11px] text-on-surface-variant font-label-code">${randomUser.name} liberado no ${randomUser.canal}</div>
- </div>
- </div>
- <span class="font-label-tabular text-label-code text-secondary bg-secondary/10 px-2 py-0.5 rounded font-bold">agora</span>
- `;
-
- container.prepend(newItem);
- if (container.children.length > 5) {
- container.removeChild(container.lastElementChild);
- }
- }
-
- showToast('Novo PIX Aprovado', randomUser.val, `${randomUser.name} liberado no ${randomUser.canal}`);
- closeDemoModal();
- }
-
- // Timer para alimentar o feed periodicamente
- setInterval(() => {
- simulatePixPayment();
- }, 14000);
-
- // Modal Controls
- function openDemoModal() {
- const modal = document.getElementById('demo-modal');
- if (modal) {
- modal.classList.remove('hidden');
- modal.classList.add('flex');
- }
- }
-
- function closeDemoModal() {
- const modal = document.getElementById('demo-modal');
- if (modal) {
- modal.classList.add('hidden');
- modal.classList.remove('flex');
- }
- }
-
- // Interceptar clique no botão "Ver Demonstração do Funil"
- document.querySelectorAll('a[href="#demo"]').forEach(el => {
- el.addEventListener('click', (e) => {
- e.preventDefault();
- openDemoModal();
- });
- });
-
- // Atalho de teclado K / Ctrl+K
- document.addEventListener('keydown', (e) => {
- if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
- e.preventDefault();
- const modal = document.getElementById('demo-modal');
- if (modal && modal.classList.contains('flex')) {
- closeDemoModal();
- } else {
- openDemoModal();
- }
- }
- });
-</script>
-

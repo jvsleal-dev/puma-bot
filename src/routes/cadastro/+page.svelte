@@ -1,3 +1,57 @@
+<script lang="ts">
+  let name = '';
+  let email = '';
+  let password = '';
+  let confirmPassword = '';
+  let showPassword = false;
+  let loading = false;
+  let errorMessage = '';
+  let successMessage = '';
+
+  async function handleRegister() {
+    if (!name || !email || !password) {
+      errorMessage = 'Preencha todos os campos obrigatórios.';
+      return;
+    }
+
+    if (password.length < 6) {
+      errorMessage = 'A senha deve conter no mínimo 6 caracteres.';
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      errorMessage = 'As senhas não coincidem.';
+      return;
+    }
+
+    loading = true;
+    errorMessage = '';
+    successMessage = '';
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        successMessage = 'Conta criada com sucesso! Redirecionando para login...';
+        setTimeout(() => {
+          window.location.href = '/login?registered=1';
+        }, 1500);
+      } else {
+        errorMessage = data.error || 'Erro ao criar conta.';
+      }
+    } catch (e) {
+      errorMessage = 'Erro de conexão com o servidor.';
+    } finally {
+      loading = false;
+    }
+  }
+</script>
+
 <svelte:head>
  <title>Puma Bot — Cadastro de Nova Conta</title>
 </svelte:head>
@@ -354,74 +408,3 @@
 </div>
 </footer>
 <!-- Script for UI Micro-Interactions -->
-<script>
- function togglePasswordVisibility(inputId, btn) {
- const input = document.getElementById(inputId);
- const icon = btn.querySelector('.material-symbols-outlined');
- if (input.type === 'password') {
- input.type = 'text';
- icon.textContent = 'visibility_off';
- } else {
- input.type = 'password';
- icon.textContent = 'visibility';
- }
- }
- </script>
-
-<script>
- document.addEventListener('DOMContentLoaded', () => {
- const form = document.getElementById('cadastro-form') || document.querySelector('form');
- const alertBox = document.getElementById('cadastro-alert');
-
- if (form) {
- form.addEventListener('submit', async (e) => {
- e.preventDefault();
- const name = (document.getElementById('name-input') || {}).value;
- const email = (document.getElementById('email-input') || {}).value;
- const password = (document.getElementById('password-input') || {}).value;
- const passwordConfirm = (document.getElementById('password-confirm') || {}).value;
-
- if (passwordConfirm && password !== passwordConfirm) {
- showAlert('As senhas não coincidem.', 'error');
- return;
- }
-
- const submitBtn = form.querySelector('button[type="submit"]');
- const originalText = submitBtn.innerHTML;
- submitBtn.disabled = true;
- submitBtn.innerText = 'Processando...';
-
- try {
- const res = await fetch('/api/auth/register', {
- method: 'POST',
- headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({ name, email, password })
- });
- const data = await res.json();
-
- if (!res.ok) {
- throw new Error(data.error || 'Erro ao realizar cadastro');
- }
-
- showAlert(' Conta criada com sucesso! Redirecionando para login...', 'success');
- setTimeout(() => {
- window.location.href = '/login?registered=1';
- }, 1200);
- } catch (err) {
- showAlert(err.message, 'error');
- submitBtn.disabled = false;
- submitBtn.innerHTML = originalText;
- }
- });
- }
-
- function showAlert(msg, type) {
- if (!alertBox) return alert(msg);
- alertBox.className = type === 'error' 
- ? 'p-3 rounded-lg text-sm mb-4 bg-red-950/80 border border-red-500/50 text-red-200 block'
- : 'p-3 rounded-lg text-sm mb-4 bg-emerald-950/80 border border-emerald-500/50 text-emerald-200 block';
- alertBox.innerText = msg;
- }
- });
-</script>
-
