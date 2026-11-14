@@ -4,37 +4,32 @@
   export let items: { question: string; answer: string }[] = [];
   export let allowMultiple: boolean = false;
 
-  let openIndexes = new Set<number>();
+  let openIndex: number | null = null;
+  let openIndices: number[] = [];
 
   function toggle(index: number) {
     if (allowMultiple) {
-      const next = new Set(openIndexes);
-      if (next.has(index)) {
-        next.delete(index);
+      if (openIndices.includes(index)) {
+        openIndices = openIndices.filter((i) => i !== index);
       } else {
-        next.add(index);
+        openIndices = [...openIndices, index];
       }
-      openIndexes = next;
     } else {
-      if (openIndexes.has(index)) {
-        openIndexes = new Set();
-      } else {
-        openIndexes = new Set([index]);
-      }
+      openIndex = openIndex === index ? null : index;
     }
   }
 </script>
 
 <div class="space-y-3 w-full">
   {#each items as item, i}
-    {@const isOpen = openIndexes.has(i)}
+    {@const isOpen = allowMultiple ? openIndices.includes(i) : openIndex === i}
     <div
       class="rounded-xl border transition-all duration-200 overflow-hidden {isOpen ? 'border-[#7C3AED]/60 bg-[#121117] shadow-[0_0_24px_rgba(124,58,237,0.12)]' : 'border-[#222226] bg-[#111113] hover:border-[#353437]'}"
     >
       <button
         type="button"
         on:click={() => toggle(i)}
-        class="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 select-none focus:outline-none transition-colors"
+        class="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 select-none focus:outline-none transition-colors cursor-pointer"
         aria-expanded={isOpen}
       >
         <span class="font-['Geist',sans-serif] text-sm sm:text-base font-medium transition-colors {isOpen ? 'text-white' : 'text-[#E5E1E4] hover:text-white'}">
@@ -58,4 +53,3 @@
     </div>
   {/each}
 </div>
-

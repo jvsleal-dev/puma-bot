@@ -104,11 +104,13 @@
  </span>
 </div>
 <!-- Navigation Links from JSON Anchor -->
-<nav class="hidden md:flex items-center gap-8">
-<a class="text-primary dark:text-primary font-medium text-body-md font-body-md transition-colors" href="#recursos">Recursos</a>
-<a class="text-on-surface-variant hover:text-on-surface dark:text-on-surface-variant dark:hover:text-on-surface font-normal text-body-md font-body-md transition-colors" href="#solucoes">Soluções</a>
-<a class="text-on-surface-variant hover:text-on-surface dark:text-on-surface-variant dark:hover:text-on-surface font-normal text-body-md font-body-md transition-colors" href="#taxas">Taxas</a>
-<a class="text-on-surface-variant hover:text-on-surface dark:text-on-surface-variant dark:hover:text-on-surface font-normal text-body-md font-body-md transition-colors" href="#documentacao">Documentação</a>
+<nav class="hidden md:flex items-center gap-7">
+<a class="text-on-surface-variant hover:text-on-surface font-medium text-body-md transition-colors" href="#recursos">Recursos</a>
+<a class="text-on-surface-variant hover:text-on-surface font-medium text-body-md transition-colors" href="#solucoes">Soluções</a>
+<a class="text-on-surface-variant hover:text-on-surface font-medium text-body-md transition-colors" href="#taxas">Taxas</a>
+<a class="text-on-surface-variant hover:text-on-surface font-medium text-body-md transition-colors" href="#gateways">Gateways</a>
+<a class="text-on-surface-variant hover:text-on-surface font-medium text-body-md transition-colors" href="#documentacao">Documentação</a>
+<a class="text-on-surface-variant hover:text-on-surface font-medium text-body-md transition-colors" href="#faq">Dúvidas</a>
 </nav>
 <!-- Trailing Status & Actions -->
 <div class="flex items-center gap-3.5">
@@ -346,7 +348,7 @@
 </div>
 </section>
 <!-- Integration Gateways & Cascade Failover Strip -->
-<section class="py-12 border-y border-outline-variant/20 bg-surface-container-lowest/60">
+<section class="py-12 border-y border-outline-variant/20 bg-surface-container-lowest/60 scroll-mt-16" id="gateways">
 <div class="max-w-7xl mx-auto px-4 md:px-8">
 <div class="text-center mb-6">
 <span class="font-label-code text-label-code text-on-surface-variant uppercase tracking-widest">
@@ -582,7 +584,8 @@
 </div>
 </section>
 <!-- Step-by-Step Practical Implementation (4 Passos) -->
-<section class="py-20 md:py-28 relative" id="passos">
+<section class="py-20 md:py-28 relative scroll-mt-16" id="solucoes">
+<div id="passos"></div>
 <div class="max-w-7xl mx-auto px-4 md:px-8">
 <div class="text-center max-w-3xl mx-auto mb-16">
 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container border border-outline-variant/40 text-on-surface font-label-code text-label-code mb-4">
@@ -712,8 +715,91 @@
 </div>
 </div>
 </section>
+<!-- API & Webhook Documentation Section -->
+<section class="py-20 bg-surface-dim border-t border-outline-variant/20 scroll-mt-16" id="documentacao">
+  <div class="max-w-7xl mx-auto px-4 md:px-8">
+    <div class="text-center max-w-3xl mx-auto mb-14">
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-container/20 border border-primary/30 text-primary font-label-code text-label-code mb-4">
+        <span class="material-symbols-outlined text-[14px]">terminal</span>
+        DESENVOLVEDORES & INTEGRABILIDADE
+      </span>
+      <h2 class="text-headline-xl font-headline-xl font-bold text-on-surface tracking-tight mb-3">
+        Documentação da API & Webhooks em Tempo Real
+      </h2>
+      <p class="text-body-lg font-body-lg text-on-surface-variant">
+        Endpoints de alto throughput homologados para liquidação em menos de 50 milissegundos com padrão BACEN.
+      </p>
+    </div>
+
+    <!-- Interactive API Endpoints Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" id="seguranca">
+      <!-- Card 1: Webhook PIX -->
+      <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/30 rim-card space-y-4 flex flex-col justify-between">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="px-2 py-0.5 rounded text-[11px] font-['JetBrains_Mono'] bg-[#10B981]/15 text-[#10B981] font-bold">POST</span>
+            <span class="text-[10px] font-['JetBrains_Mono'] text-on-surface-variant">&lt; 50ms SLA</span>
+          </div>
+          <h3 class="text-headline-sm font-headline-sm font-semibold text-on-surface">Webhook PIX Multi-Gateway</h3>
+          <p class="text-xs text-on-surface-variant leading-relaxed">
+            Recepção de confirmação bancária compatível com Efí Bank (BACEN), Asaas, PushinPay e Mercado Pago com idempotência e entrega de link de uso único.
+          </p>
+          <div class="p-3 rounded-xl bg-surface-container-low border border-outline-variant/20 font-['JetBrains_Mono'] text-[11px] text-[#A78BFA] overflow-x-auto">
+            <code>/api/webhook/pix</code>
+          </div>
+        </div>
+        <div class="pt-3 border-t border-outline-variant/20 flex items-center justify-between text-xs text-on-surface-variant">
+          <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Atômico</span>
+          <a href="/gateways" class="text-primary hover:underline font-semibold">Testar no Sandbox</a>
+        </div>
+      </div>
+
+      <!-- Card 2: Webhook Telegram -->
+      <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/30 rim-card space-y-4 flex flex-col justify-between">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="px-2 py-0.5 rounded text-[11px] font-['JetBrains_Mono'] bg-[#10B981]/15 text-[#10B981] font-bold">POST</span>
+            <span class="text-[10px] font-['JetBrains_Mono'] text-on-surface-variant">Fail-Fast</span>
+          </div>
+          <h3 class="text-headline-sm font-headline-sm font-semibold text-on-surface">Webhook Telegram Bot</h3>
+          <p class="text-xs text-on-surface-variant leading-relaxed">
+            Manipulação instantânea de comandos /start, botões inline, geração de cobrança PIX com cópia em 1 toque e verificação com secret token.
+          </p>
+          <div class="p-3 rounded-xl bg-surface-container-low border border-outline-variant/20 font-['JetBrains_Mono'] text-[11px] text-[#A78BFA] overflow-x-auto">
+            <code>/api/webhook/telegram/[botId]</code>
+          </div>
+        </div>
+        <div class="pt-3 border-t border-outline-variant/20 flex items-center justify-between text-xs text-on-surface-variant">
+          <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Zero Emojis</span>
+          <a href="/robos" class="text-primary hover:underline font-semibold">Ver Meus Bots</a>
+        </div>
+      </div>
+
+      <!-- Card 3: Cron Inadimplência -->
+      <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/30 rim-card space-y-4 flex flex-col justify-between">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="px-2 py-0.5 rounded text-[11px] font-['JetBrains_Mono'] bg-[#38BDF8]/15 text-[#38BDF8] font-bold">GET</span>
+            <span class="text-[10px] font-['JetBrains_Mono'] text-on-surface-variant">A cada 5 min</span>
+          </div>
+          <h3 class="text-headline-sm font-headline-sm font-semibold text-on-surface">Cron Job de Expulsão</h3>
+          <p class="text-xs text-on-surface-variant leading-relaxed">
+            Varredura automática das assinaturas vencidas com expulsão imediata do grupo VIP no Telegram e envio de mensagem privada de renovação.
+          </p>
+          <div class="p-3 rounded-xl bg-surface-container-low border border-outline-variant/20 font-['JetBrains_Mono'] text-[11px] text-[#A78BFA] overflow-x-auto">
+            <code>/api/cron/check-expired</code>
+          </div>
+        </div>
+        <div class="pt-3 border-t border-outline-variant/20 flex items-center justify-between text-xs text-on-surface-variant">
+          <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Protegido Bearer</span>
+          <a href="/clientes" class="text-primary hover:underline font-semibold">Ver Assinantes</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 <!-- Technical FAQ Accordion -->
-<section class="py-20 md:py-28 relative" id="faq">
+<section class="py-20 md:py-28 relative scroll-mt-16" id="faq">
 <div class="max-w-4xl mx-auto px-4 md:px-8">
 <div class="text-center mb-14">
 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container border border-outline-variant/40 text-on-surface font-label-code text-label-code mb-4">
@@ -785,6 +871,8 @@
     transition:fade={{ duration: 150 }}
     class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
     on:click|self={closeDemoModal}
+    on:keydown={(e) => e.key === 'Escape' && closeDemoModal()}
+    tabindex="-1"
     role="dialog"
     aria-modal="true"
   >

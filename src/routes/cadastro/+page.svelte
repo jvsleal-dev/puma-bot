@@ -8,6 +8,9 @@
   let errorMessage = '';
   let successMessage = '';
 
+  let isTermsOpen = false;
+  let isPrivacyOpen = false;
+
   async function handleRegister() {
     if (!name || !email || !password) {
       errorMessage = 'Preencha todos os campos obrigatórios.';
@@ -298,10 +301,42 @@
   <footer class="h-10 shrink-0 px-6 md:px-12 border-t border-[#222226] bg-[#0C0C0E]/90 flex items-center justify-between text-[11px] text-[#958DA1]">
     <span>© 2026 Puma Bot Inc. Todos os direitos reservados.</span>
     <div class="flex items-center gap-4">
-      <a href="#termos" class="hover:text-white transition-colors">Termos de Uso</a>
-      <a href="#privacidade" class="hover:text-white transition-colors">Privacidade</a>
+      <button type="button" on:click={() => isTermsOpen = true} class="hover:text-white transition-colors">Termos de Uso</button>
+      <button type="button" on:click={() => isPrivacyOpen = true} class="hover:text-white transition-colors">Privacidade</button>
       <span class="text-[#10B981] font-['JetBrains_Mono']">Ambiente Seguro 256-bit</span>
     </div>
   </footer>
 
 </div>
+
+<!-- Modal: Termos -->
+{#if isTermsOpen}
+  <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-[#111113] border border-[#222226] rounded-2xl p-6 space-y-4 text-xs text-[#958DA1]">
+      <div class="flex items-center justify-between pb-3 border-b border-[#222226]">
+        <h3 class="font-bold text-[#E5E1E4]">Termos de Uso</h3>
+        <button type="button" on:click={() => isTermsOpen = false} class="text-[#958DA1] hover:text-white">
+          <span class="material-symbols-outlined text-[16px]">close</span>
+        </button>
+      </div>
+      <p>O Puma Bot disponibiliza software como serviço (SaaS) para automação de mensagens e vendas via PIX no Telegram. Não realizamos custódia de valores brutos.</p>
+      <button type="button" on:click={() => isTermsOpen = false} class="w-full h-8 rounded-lg bg-[#7C3AED] text-white">Fechar</button>
+    </div>
+  </div>
+{/if}
+
+<!-- Modal: Privacidade -->
+{#if isPrivacyOpen}
+  <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-[#111113] border border-[#222226] rounded-2xl p-6 space-y-4 text-xs text-[#958DA1]">
+      <div class="flex items-center justify-between pb-3 border-b border-[#222226]">
+        <h3 class="font-bold text-[#E5E1E4]">Políticas de Privacidade & LGPD</h3>
+        <button type="button" on:click={() => isPrivacyOpen = false} class="text-[#958DA1] hover:text-white">
+          <span class="material-symbols-outlined text-[16px]">close</span>
+        </button>
+      </div>
+      <p>Seus dados são protegidos por criptografia em repouso e trânsito (AES-256 e TLS 1.3). Não vendemos dados a terceiros.</p>
+      <button type="button" on:click={() => isPrivacyOpen = false} class="w-full h-8 rounded-lg bg-[#7C3AED] text-white">Fechar</button>
+    </div>
+  </div>
+{/if}

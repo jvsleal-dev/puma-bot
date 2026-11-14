@@ -132,7 +132,10 @@
             <a href="/fluxos" class="hover:text-[#E5E1E4] transition-colors">Funis e Remarketing</a>
           </li>
           <li>
-            <a href="#taxas" class="hover:text-[#E5E1E4] transition-colors">Calculadora de Lucro</a>
+            <a href="/grupos" class="hover:text-[#E5E1E4] transition-colors">Grupos & Canais VIP</a>
+          </li>
+          <li>
+            <a href="/#taxas" class="hover:text-[#E5E1E4] transition-colors">Calculadora de Lucro</a>
           </li>
           <li>
             <button type="button" on:click={openDemo} class="hover:text-[#E5E1E4] transition-colors text-left flex items-center gap-1.5">
@@ -141,10 +144,13 @@
             </button>
           </li>
           <li>
-            <a href="#recursos" class="hover:text-[#E5E1E4] transition-colors">Links de Uso Único</a>
+            <a href="/#recursos" class="hover:text-[#E5E1E4] transition-colors">Links de Uso Único</a>
           </li>
           <li>
-            <a href="#recursos" class="hover:text-[#E5E1E4] transition-colors">Expulsão de Inadimplentes</a>
+            <a href="/#recursos" class="hover:text-[#E5E1E4] transition-colors">Expulsão de Inadimplentes</a>
+          </li>
+          <li>
+            <a href="/financeiro" class="hover:text-[#E5E1E4] transition-colors">Extrato Financeiro</a>
           </li>
           <li>
             <a href="/dashboard" class="hover:text-[#E5E1E4] transition-colors">Dashboard em Tempo Real</a>
@@ -195,18 +201,21 @@
         </h4>
         <ul class="space-y-2.5 text-xs">
           <li>
-            <a href="/api/webhook/pix" class="hover:text-[#E5E1E4] transition-colors font-['JetBrains_Mono'] text-[11px] text-[#A78BFA]">
-              POST /api/webhook/pix
+            <a href="/#documentacao" class="hover:text-[#E5E1E4] transition-colors font-['JetBrains_Mono'] text-[11px] text-[#A78BFA] flex items-center justify-between">
+              <span>POST /api/webhook/pix</span>
+              <span class="text-[9px] text-[#10B981]">BACEN</span>
             </a>
           </li>
           <li>
-            <a href="/api/webhook/telegram/bot_alpha_01" class="hover:text-[#E5E1E4] transition-colors font-['JetBrains_Mono'] text-[11px] text-[#A78BFA]">
-              POST /api/webhook/telegram
+            <a href="/#documentacao" class="hover:text-[#E5E1E4] transition-colors font-['JetBrains_Mono'] text-[11px] text-[#A78BFA] flex items-center justify-between">
+              <span>POST /api/webhook/telegram</span>
+              <span class="text-[9px] text-[#10B981]">Bot API</span>
             </a>
           </li>
           <li>
-            <a href="/api/cron/check-expired" class="hover:text-[#E5E1E4] transition-colors font-['JetBrains_Mono'] text-[11px] text-[#958DA1]">
-              GET /api/cron/check-expired
+            <a href="/#documentacao" class="hover:text-[#E5E1E4] transition-colors font-['JetBrains_Mono'] text-[11px] text-[#958DA1] flex items-center justify-between">
+              <span>GET /api/cron/check-expired</span>
+              <span class="text-[9px] text-[#38BDF8]">5min</span>
             </a>
           </li>
           <li>
@@ -222,7 +231,7 @@
             </a>
           </li>
           <li>
-            <a href="#seguranca" class="hover:text-[#E5E1E4] transition-colors">Assinatura HMAC & Segurança</a>
+            <a href="/#seguranca" class="hover:text-[#E5E1E4] transition-colors">Assinatura HMAC & Segurança</a>
           </li>
         </ul>
       </div>
@@ -234,7 +243,7 @@
         </h4>
         <ul class="space-y-2.5 text-xs">
           <li>
-            <a href="#faq" class="hover:text-[#E5E1E4] transition-colors">Perguntas Frequentes</a>
+            <a href="/#faq" class="hover:text-[#E5E1E4] transition-colors">Perguntas Frequentes</a>
           </li>
           <li>
             <button type="button" on:click={() => isTermsModalOpen = true} class="hover:text-[#E5E1E4] transition-colors text-left">
@@ -247,7 +256,7 @@
             </button>
           </li>
           <li>
-            <a href="https://t.me/" target="_blank" rel="noopener noreferrer" class="hover:text-[#E5E1E4] transition-colors flex items-center gap-1">
+            <a href="https://t.me/PumaBotSuporte" target="_blank" rel="noopener noreferrer" class="hover:text-[#E5E1E4] transition-colors flex items-center gap-1">
               <span>Suporte Oficial Telegram</span>
               <span class="material-symbols-outlined text-[13px] text-[#0088CC]">send</span>
             </a>
@@ -308,7 +317,7 @@
             <span class="material-symbols-outlined text-[17px]">code</span>
           </a>
           <a
-            href="https://t.me/"
+            href="https://t.me/PumaBotSuporte"
             target="_blank"
             rel="noopener noreferrer"
             title="Canal Telegram"
@@ -340,7 +349,9 @@
     class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
     role="dialog"
     aria-modal="true"
+    tabindex="-1"
     on:click|self={() => isTermsModalOpen = false}
+    on:keydown={(e) => e.key === 'Escape' && (isTermsModalOpen = false)}
   >
     <div class="relative w-full max-w-2xl bg-[#111113] border border-[#222226] rounded-2xl shadow-2xl p-6 max-h-[85vh] overflow-y-auto space-y-4 font-['Inter'] text-xs text-[#958DA1]">
       <div class="flex items-center justify-between pb-3 border-b border-[#222226]">
@@ -387,7 +398,9 @@
     class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
     role="dialog"
     aria-modal="true"
+    tabindex="-1"
     on:click|self={() => isPrivacyModalOpen = false}
+    on:keydown={(e) => e.key === 'Escape' && (isPrivacyModalOpen = false)}
   >
     <div class="relative w-full max-w-2xl bg-[#111113] border border-[#222226] rounded-2xl shadow-2xl p-6 max-h-[85vh] overflow-y-auto space-y-4 font-['Inter'] text-xs text-[#958DA1]">
       <div class="flex items-center justify-between pb-3 border-b border-[#222226]">
